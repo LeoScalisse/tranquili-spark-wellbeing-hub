@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -84,11 +85,80 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'pulse-glow': {
+					'0%, 100%': {
+						textShadow: '0 0 5px currentColor',
+						transform: 'scale(1)'
+					},
+					'50%': {
+						textShadow: '0 0 20px currentColor, 0 0 30px currentColor',
+						transform: 'scale(1.05)'
+					}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0px)'
+					},
+					'50%': {
+						transform: 'translateY(-10px)'
+					}
+				},
+				'bounce-soft': {
+					'0%, 100%': {
+						transform: 'translateY(0)',
+						animationTimingFunction: 'cubic-bezier(0.8,0,1,1)'
+					},
+					'50%': {
+						transform: 'translateY(-5px)',
+						animationTimingFunction: 'cubic-bezier(0,0,0.2,1)'
+					}
+				},
+				'slide-in-right': {
+					'0%': {
+						transform: 'translateX(100%)',
+						opacity: '0'
+					},
+					'100%': {
+						transform: 'translateX(0)',
+						opacity: '1'
+					}
+				},
+				'zoom-in': {
+					'0%': {
+						transform: 'scale(0)',
+						opacity: '0'
+					},
+					'100%': {
+						transform: 'scale(1)',
+						opacity: '1'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.3s ease-out',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'bounce-soft': 'bounce-soft 1s infinite',
+				'slide-in-right': 'slide-in-right 0.3s ease-out',
+				'zoom-in': 'zoom-in 0.3s ease-out'
+			},
+			backgroundImage: {
+				'gradient-light': 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 25%, #a8edea 75%, #fed6e3 100%)',
+				'gradient-dark': 'linear-gradient(135deg, #2c3e50 0%, #4a6741 25%, #6a5acd 75%, #2c3e50 100%)',
+				'gradient-tranquili': 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #89f7fe 75%, #66a6ff 100%)'
 			}
 		}
 	},
