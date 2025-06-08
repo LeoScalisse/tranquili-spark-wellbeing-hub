@@ -108,7 +108,7 @@ const MoodCard = () => {
                 className="mt-4"
                 variant="outline"
               >
-                💡 Receber Conselho da IA
+                💡 Receber Conselho da Tranquilinha
               </Button>
             </div>
           ) : (
@@ -152,7 +152,7 @@ const MoodCard = () => {
                         variant="outline"
                         className="w-full"
                       >
-                        💡 Receber Conselho da IA
+                        💡 Receber Conselho da Tranquilinha
                       </Button>
                     )}
                   </div>

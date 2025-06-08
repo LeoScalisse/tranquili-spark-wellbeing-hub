@@ -92,7 +92,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ isOpen, onClose, diar
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-accent" />
-            Análise da IA
+            Análise da Tranquilinha
           </DialogTitle>
           <DialogDescription>
             Insights sobre seus pensamentos e sentimentos
@@ -103,7 +103,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ isOpen, onClose, diar
           {isLoading ? (
             <div className="flex items-center justify-center space-x-2">
               <Loader2 className="h-6 w-6 animate-spin text-accent" />
-              <span>Analisando seu texto...</span>
+              <span>A Tranquilinha está analisando seu texto...</span>
             </div>
           ) : analysis ? (
             <div className="space-y-6">
@@ -134,7 +134,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ isOpen, onClose, diar
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <Lightbulb className="h-4 w-4 text-yellow-500" />
-                  Reflexão
+                  Reflexão da Tranquilinha
                 </div>
                 <p className="text-sm leading-relaxed p-3 rounded-lg bg-secondary/50 border border-yellow-200">
                   {analysis.reflection}
