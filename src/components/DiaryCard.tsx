@@ -23,9 +23,7 @@ const DiaryCard = () => {
           <CardTitle className="flex items-center gap-2">
             📔 Diário Pessoal
           </CardTitle>
-          <CardDescription>
-            Escreva seus pensamentos e deixe a IA analisar seus sentimentos
-          </CardDescription>
+          <CardDescription>Escreva seus pensamentos e deixe a Tranquili+ analisar seus sentimentos</CardDescription>
         </CardHeader>
         
         <CardContent className="space-y-4">
