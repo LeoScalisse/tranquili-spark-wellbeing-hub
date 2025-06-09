@@ -137,7 +137,8 @@
   }
 
   .tranquili-plus {
-    @apply text-accent animate-pulse-glow;
+    color: #FFDE59;
+    @apply animate-pulse-glow;
     text-shadow: 0 0 10px currentColor;
   }
 

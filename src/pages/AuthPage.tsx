@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
@@ -107,7 +108,7 @@ const AuthPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#38b6ff' }}>
         <div className="text-center">
-          <div className="text-8xl font-bold animate-zoom-in" style={{ color: '#ffde59' }}>
+          <div className="text-8xl font-bold animate-zoom-in" style={{ color: '#FFDE59' }}>
             +
           </div>
         </div>
