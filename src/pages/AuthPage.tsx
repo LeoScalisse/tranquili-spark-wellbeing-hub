@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
@@ -106,12 +105,11 @@ const AuthPage = () => {
 
   if (showTransition) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#38b6ff' }}>
         <div className="text-center">
-          <div className="text-8xl font-bold text-accent animate-zoom-in">
-            Tranquili<span className="tranquili-plus">+</span>
+          <div className="text-8xl font-bold animate-zoom-in" style={{ color: '#ffde59' }}>
+            +
           </div>
-          <p className="text-xl mt-4 animate-fade-in">Bem-vindo ao seu espaço de tranquilidade!</p>
         </div>
       </div>
     );
