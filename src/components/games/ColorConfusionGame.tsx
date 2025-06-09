@@ -12,9 +12,9 @@ interface ColorConfusionGameProps {
 }
 
 interface GameRound {
-  wordText: string;
-  wordColor: string;
-  displayColor: string;
+  topWord: string;
+  bottomWord: string;
+  bottomColor: string;
   correctAnswer: boolean;
 }
 
@@ -24,7 +24,8 @@ const colors = [
   { name: 'VERDE', color: 'text-green-500', value: 'green' },
   { name: 'AMARELO', color: 'text-yellow-500', value: 'yellow' },
   { name: 'ROXO', color: 'text-purple-500', value: 'purple' },
-  { name: 'LARANJA', color: 'text-orange-500', value: 'orange' }
+  { name: 'LARANJA', color: 'text-orange-500', value: 'orange' },
+  { name: 'ROSA', color: 'text-pink-500', value: 'pink' }
 ];
 
 const ColorConfusionGame: React.FC<ColorConfusionGameProps> = ({ onBack }) => {
@@ -60,24 +61,15 @@ const ColorConfusionGame: React.FC<ColorConfusionGameProps> = ({ onBack }) => {
     return () => clearTimeout(timer);
   }, [gameState, timeLeft]);
 
-  const getTimeLimit = () => {
-    switch (difficulty) {
-      case 'easy': return 5000;
-      case 'medium': return 3000;
-      case 'hard': return 2000;
-      default: return 3000;
-    }
-  };
-
   const generateRound = (): GameRound => {
-    const word = colors[Math.floor(Math.random() * colors.length)];
-    const displayColor = colors[Math.floor(Math.random() * colors.length)];
+    const topColor = colors[Math.floor(Math.random() * colors.length)];
+    const bottomColor = colors[Math.floor(Math.random() * colors.length)];
     
     return {
-      wordText: word.name,
-      wordColor: word.value,
-      displayColor: displayColor.color,
-      correctAnswer: word.value === displayColor.value
+      topWord: topColor.name,
+      bottomWord: bottomColor.name,
+      bottomColor: bottomColor.color,
+      correctAnswer: topColor.value === bottomColor.value
     };
   };
 
@@ -128,7 +120,6 @@ const ColorConfusionGame: React.FC<ColorConfusionGameProps> = ({ onBack }) => {
       playSuccessSound();
     }
     
-    // Award XP based on performance
     const xpEarned = Math.floor(score * 2);
     if (xpEarned > 0) {
       addXP(xpEarned);
@@ -171,9 +162,9 @@ const ColorConfusionGame: React.FC<ColorConfusionGameProps> = ({ onBack }) => {
               <div className="text-center">
                 <h2 className="text-xl font-semibold mb-4">Como Jogar</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Você verá palavras de cores escritas em diferentes cores. 
-                  Sua missão é identificar se o <strong>significado da palavra</strong> corresponde 
-                  à <strong>cor em que ela está escrita</strong>.
+                  Você verá uma palavra no topo e outra palavra colorida embaixo. 
+                  Sua missão é identificar se a <strong>cor da palavra de baixo</strong> corresponde 
+                  ao <strong>significado da palavra de cima</strong>.
                 </p>
               </div>
               
@@ -244,37 +235,60 @@ const ColorConfusionGame: React.FC<ColorConfusionGameProps> = ({ onBack }) => {
                 <p className="text-sm text-muted-foreground mb-4">
                   Rodada {round}/{totalRounds}
                 </p>
-                <p className="text-lg mb-6">
-                  O significado da palavra <strong>corresponde</strong> à cor em que está escrita?
-                </p>
+                <h2 className="text-lg font-semibold mb-6">
+                  Cor ou Confusão?
+                </h2>
+                
+                <div className="flex justify-end mb-4">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="text-xs"
+                  >
+                    Iniciante
+                  </Button>
+                </div>
               </div>
               
               {currentRound && (
                 <div className="space-y-8">
-                  <div 
-                    className={`text-6xl font-bold ${currentRound.displayColor}`}
-                  >
-                    {currentRound.wordText}
+                  {/* Palavra de cima (em preto) */}
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+                    <div className="text-5xl font-bold text-foreground">
+                      {currentRound.topWord}
+                    </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button
+                  {/* Palavra de baixo (colorida) */}
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+                    <div className={`text-5xl font-bold ${currentRound.bottomColor}`}>
+                      {currentRound.bottomWord}
+                    </div>
+                  </div>
+                  
+                  {/* Botões de resposta */}
+                  <div className="flex justify-center gap-8">
+                    <button
                       onClick={() => handleAnswer(true)}
-                      className="h-16 text-lg"
-                      variant="outline"
+                      className="w-16 h-16 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center text-white text-2xl transition-all duration-200 hover:scale-110"
                     >
-                      ✅ SIM
-                    </Button>
-                    <Button
+                      ✓
+                    </button>
+                    <button
                       onClick={() => handleAnswer(false)}
-                      className="h-16 text-lg"
-                      variant="outline"
+                      className="w-16 h-16 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white text-2xl transition-all duration-200 hover:scale-110"
                     >
-                      ❌ NÃO
-                    </Button>
+                      ✕
+                    </button>
                   </div>
                 </div>
               )}
+              
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Pontos: <strong>{score}</strong> | Tempo: <strong>{timeLeft}s</strong> | Sequência: <strong>{streak}</strong> 🔥
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
