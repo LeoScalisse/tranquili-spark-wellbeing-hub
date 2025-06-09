@@ -4,9 +4,10 @@ import { useAudio } from '@/contexts/AudioContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Gamepad2, Brain, Puzzle, Clock, Trophy } from 'lucide-react';
+import { ArrowLeft, Gamepad2, Brain, Puzzle, Clock, Trophy, Zap } from 'lucide-react';
 import ColorConfusionGame from '@/components/games/ColorConfusionGame';
 import MemoryFragmentsGame from '@/components/games/MemoryFragmentsGame';
+import TranquiliRunnerGame from '@/components/games/TranquiliRunnerGame';
 import { useState } from 'react';
 
 interface Game {
@@ -37,6 +38,15 @@ const games: Game[] = [
     difficulty: 'Fácil',
     estimatedTime: '5-10 min',
     benefits: ['Memória', 'Relaxamento', 'Criatividade']
+  },
+  {
+    id: 'tranquili-runner',
+    title: 'Tranquili Run+',
+    description: 'Runner infinito relaxante pela Tranquilândia. Colete bolhas de calma e evite pensamentos estressantes.',
+    icon: <Zap className="h-8 w-8" />,
+    difficulty: 'Médio',
+    estimatedTime: '10-15 min',
+    benefits: ['Reflexos', 'Foco', 'Relaxamento', 'Diversão']
   }
 ];
 
@@ -72,6 +82,10 @@ const TranquiliGamesPage = () => {
     return <MemoryFragmentsGame onBack={handleBackToMenu} />;
   }
 
+  if (selectedGame === 'tranquili-runner') {
+    return <TranquiliRunnerGame onBack={handleBackToMenu} />;
+  }
+
   return (
     <div className="min-h-screen p-4">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -101,7 +115,7 @@ const TranquiliGamesPage = () => {
           </CardHeader>
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {games.map((game) => (
             <Card 
               key={game.id}
