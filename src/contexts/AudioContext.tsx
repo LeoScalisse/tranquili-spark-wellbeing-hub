@@ -190,30 +190,37 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   };
 
-  // NOVO: Som específico para transições - "Portal Zen"
+  // Som de transição ultra relaxante - "Respiração Zen"
   const playTransitionSound = async () => {
     if (!isAudioEnabled || !deepSynth || !padSynth) return;
     
     await startAudio();
     
-    // Som dimensional profundo com múltiplas camadas
-    // Baixo profundo e envolvente (100-200 Hz)
-    deepSynth.triggerAttackRelease(110, '4.0'); // Lá baixo
-    deepSynth.triggerAttackRelease(147, '3.5', '+0.5'); // Ré
+    // Som muito suave e envolvente como uma respiração profunda
+    // Frequência fundamental muito baixa e calma (80-150 Hz)
+    deepSynth.triggerAttackRelease(80, '5.0'); // Som base muito baixo e longo
     
-    // Harmônicos etéreos por cima
+    // Camada harmônica suave que surge gradualmente
     setTimeout(() => {
-      padSynth.triggerAttackRelease('A3', '3.0');
-    }, 1000);
+      padSynth.triggerAttackRelease('C2', '4.0');
+    }, 800);
     
+    // Segunda camada ainda mais suave
     setTimeout(() => {
-      padSynth.triggerAttackRelease('D4', '2.5');
-    }, 1500);
+      padSynth.triggerAttackRelease('G2', '3.5');
+    }, 1600);
     
-    // Finalização cristalina
+    // Finalização etérea e suave
     setTimeout(() => {
-      padSynth.triggerAttackRelease('A4', '2.0');
-    }, 2500);
+      padSynth.triggerAttackRelease('C3', '2.5');
+    }, 2800);
+    
+    // Toque final cristalino muito sutil
+    setTimeout(() => {
+      if (synth) {
+        synth.triggerAttackRelease('C4', '1.0');
+      }
+    }, 3500);
   };
 
   // Click sound como gota d'água suave
