@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as Tone from 'tone';
 
@@ -57,7 +56,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Sintetizador de sino tibetano para sucessos
     const bellInstance = new Tone.MetalSynth({
-      frequency: 528, // Frequência de cura
       envelope: {
         attack: 0.1,
         decay: 1.4,
