@@ -9,7 +9,7 @@ import AIAnalysisModal from './AIAnalysisModal';
 const DiaryCard = () => {
   const [diaryText, setDiaryText] = useState('');
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
-  const { playClickSound } = useAudio();
+  const { playClickSound, playTypingSound } = useAudio();
 
   const handleAnalyze = () => {
     if (diaryText.trim().length < 10) {
@@ -17,6 +17,14 @@ const DiaryCard = () => {
     }
     playClickSound();
     setShowAnalysisModal(true);
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDiaryText(e.target.value);
+    // Som relaxante de digitação (folhas rustling)
+    if (e.target.value.length > diaryText.length) {
+      playTypingSound();
+    }
   };
 
   return (
@@ -34,7 +42,7 @@ const DiaryCard = () => {
         <CardContent className="space-y-4">
           <Textarea 
             value={diaryText} 
-            onChange={e => setDiaryText(e.target.value)} 
+            onChange={handleTextChange}
             placeholder="Como foi seu dia? O que você está sentindo? Escreva aqui seus pensamentos..." 
             className="min-h-[120px] glassmorphism resize-none" 
             maxLength={1000} 
