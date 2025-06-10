@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
@@ -23,7 +22,7 @@ const AuthPage = () => {
   });
 
   const { login, register } = useUser();
-  const { playSuccessSound, playClickSound } = useAudio();
+  const { playTransitionSound, playClickSound } = useAudio();
   const navigate = useNavigate();
 
   const validateEmail = (email: string) => {
@@ -78,11 +77,11 @@ const AuthPage = () => {
       }
       
       if (success) {
-        playSuccessSound();
+        playTransitionSound();
         setShowTransition(true);
         setTimeout(() => {
           navigate('/');
-        }, 2000);
+        }, 4000);
       }
     } catch (error) {
       toast.error('Ocorreu um erro. Tente novamente.');

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +14,7 @@ const AudioSettings = () => {
     setSoundProfile,
     playClickSound,
     playSuccessSound,
+    playTransitionSound,
     playMoodSound
   } = useAudio();
 
@@ -62,8 +62,11 @@ const AudioSettings = () => {
       playMoodSound('calm');
     } else if (type === 'success') {
       playSuccessSound();
+    } else if (type === 'transition') {
+      playTransitionSound();
     }
-    setTimeout(() => setIsTestMode(false), 2000);
+    const duration = type === 'transition' ? 4500 : 2000;
+    setTimeout(() => setIsTestMode(false), duration);
   };
 
   return (
@@ -117,16 +120,16 @@ const AudioSettings = () => {
               </div>
             </div>
 
-            {/* Testes de som */}
+            {/* Testes de som - ATUALIZADO */}
             <div className="space-y-3">
               <Label className="text-sm font-medium">Testar Sons</Label>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => testSound('mood')}
                   disabled={isTestMode}
-                  className="flex-1"
+                  className="text-xs"
                 >
                   🧘 Calma
                 </Button>
@@ -135,9 +138,18 @@ const AudioSettings = () => {
                   size="sm"
                   onClick={() => testSound('success')}
                   disabled={isTestMode}
-                  className="flex-1"
+                  className="text-xs"
                 >
                   ✨ Sucesso
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => testSound('transition')}
+                  disabled={isTestMode}
+                  className="text-xs"
+                >
+                  🌀 Transição
                 </Button>
               </div>
             </div>

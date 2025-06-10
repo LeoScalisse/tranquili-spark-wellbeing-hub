@@ -4,6 +4,7 @@ import * as Tone from 'tone';
 interface AudioContextType {
   playMoodSound: (moodType: string) => void;
   playSuccessSound: () => void;
+  playTransitionSound: () => void;
   playClickSound: () => void;
   playTypingSound: () => void;
   playAchievementSound: () => void;
@@ -32,13 +33,21 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [synth, setSynth] = useState<Tone.Synth | null>(null);
   const [bellSynth, setBellSynth] = useState<Tone.MetalSynth | null>(null);
   const [padSynth, setPadSynth] = useState<Tone.Synth | null>(null);
+  const [deepSynth, setDeepSynth] = useState<Tone.Synth | null>(null);
   const [reverb, setReverb] = useState<Tone.Reverb | null>(null);
+  const [deepReverb, setDeepReverb] = useState<Tone.Reverb | null>(null);
 
   useEffect(() => {
-    // Cria um reverb natural para profundidade
+    // Reverb natural para profundidade
     const reverbInstance = new Tone.Reverb({
       decay: 4,
       wet: 0.3
+    }).toDestination();
+
+    // Reverb profundo e envolvente para transições
+    const deepReverbInstance = new Tone.Reverb({
+      decay: 8,
+      wet: 0.7
     }).toDestination();
 
     // Sintetizador principal com envelope suave
@@ -80,16 +89,33 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     }).connect(reverbInstance);
 
+    // Sintetizador profundo para transições dimensionais
+    const deepInstance = new Tone.Synth({
+      oscillator: {
+        type: 'sawtooth'
+      },
+      envelope: {
+        attack: 2.0,
+        decay: 1.0,
+        sustain: 0.9,
+        release: 4.0
+      }
+    }).connect(deepReverbInstance);
+
     setSynth(synthInstance);
     setBellSynth(bellInstance);
     setPadSynth(padInstance);
+    setDeepSynth(deepInstance);
     setReverb(reverbInstance);
+    setDeepReverb(deepReverbInstance);
 
     return () => {
       synthInstance.dispose();
       bellInstance.dispose();
       padInstance.dispose();
+      deepInstance.dispose();
       reverbInstance.dispose();
+      deepReverbInstance.dispose();
     };
   }, []);
 
@@ -151,17 +177,43 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     moodSound();
   };
 
-  // Som de sucesso como carrilhão harmônico
+  // Som de sucesso mais sutil
   const playSuccessSound = async () => {
     if (!isAudioEnabled || !bellSynth) return;
     
     await startAudio();
     
-    // Carrilhão harmônico ascendente (singing bowls style)
-    const successNotes = [264, 297, 330, 396]; // Frequências solfeggio
+    // Carrilhão mais sutil e breve
+    const successNotes = [396, 528]; // Frequências solfeggio reduzidas
     successNotes.forEach((freq, index) => {
-      bellSynth.triggerAttackRelease(freq, '1.2', `+${index * 0.2}`);
+      bellSynth.triggerAttackRelease(freq, '0.8', `+${index * 0.3}`);
     });
+  };
+
+  // NOVO: Som específico para transições - "Portal Zen"
+  const playTransitionSound = async () => {
+    if (!isAudioEnabled || !deepSynth || !padSynth) return;
+    
+    await startAudio();
+    
+    // Som dimensional profundo com múltiplas camadas
+    // Baixo profundo e envolvente (100-200 Hz)
+    deepSynth.triggerAttackRelease(110, '4.0'); // Lá baixo
+    deepSynth.triggerAttackRelease(147, '3.5', '+0.5'); // Ré
+    
+    // Harmônicos etéreos por cima
+    setTimeout(() => {
+      padSynth.triggerAttackRelease('A3', '3.0');
+    }, 1000);
+    
+    setTimeout(() => {
+      padSynth.triggerAttackRelease('D4', '2.5');
+    }, 1500);
+    
+    // Finalização cristalina
+    setTimeout(() => {
+      padSynth.triggerAttackRelease('A4', '2.0');
+    }, 2500);
   };
 
   // Click sound como gota d'água suave
@@ -255,6 +307,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const value = {
     playMoodSound,
     playSuccessSound,
+    playTransitionSound,
     playClickSound,
     playTypingSound,
     playAchievementSound,
