@@ -27,9 +27,9 @@ const App = () => {
         <ThemeProvider>
           <UserProvider>
             <AudioProvider>
-              <Toaster />
-              <Sonner />
               <BrowserRouter>
+                <Toaster />
+                <Sonner />
                 <Routes>
                   <Route path="/auth" element={<AuthPage />} />
                   <Route path="/" element={
