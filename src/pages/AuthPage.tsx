@@ -23,7 +23,7 @@ const AuthPage = () => {
   });
 
   const { login, register } = useUser();
-  const { playClickSound } = useAudio();
+  const { playClickSound, playTransitionSound } = useAudio();
   const navigate = useNavigate();
 
   const validateEmail = (email: string) => {
@@ -79,6 +79,7 @@ const AuthPage = () => {
       
       if (success) {
         setShowTransition(true);
+        playTransitionSound(); // Som de harpa relaxante
         setTimeout(() => {
           navigate('/');
         }, 4000);
@@ -235,6 +236,47 @@ const AuthPage = () => {
       </Card>
     </div>
   );
+};
+
+const validateEmail = (email: string) => {
+  return email.includes('@') && email.includes('.');
+};
+
+const validateForm = () => {
+  if (!validateEmail(formData.email)) {
+    toast.error('Por favor, insira um e-mail válido');
+    return false;
+  }
+  
+  if (formData.password.length < 6) {
+    toast.error('A senha deve ter pelo menos 6 caracteres');
+    return false;
+  }
+  
+  if (!isLogin && formData.password !== formData.confirmPassword) {
+    toast.error('As senhas não coincidem');
+    return false;
+  }
+  
+  if (!isLogin && formData.name.trim().length < 2) {
+    toast.error('O nome deve ter pelo menos 2 caracteres');
+    return false;
+  }
+  
+  return true;
+};
+
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  setFormData({
+    ...formData,
+    [e.target.name]: e.target.value
+  });
+};
+
+const toggleMode = () => {
+  setIsLogin(!isLogin);
+  setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+  playClickSound();
 };
 
 export default AuthPage;
