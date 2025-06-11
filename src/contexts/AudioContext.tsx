@@ -190,37 +190,44 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
   };
 
-  // Som de transição ultra relaxante - "Respiração Zen"
+  // Som de transição como acorde de harpa com fade
   const playTransitionSound = async () => {
-    if (!isAudioEnabled || !deepSynth || !padSynth) return;
+    if (!isAudioEnabled || !bellSynth || !synth) return;
     
     await startAudio();
     
-    // Som muito suave e envolvente como uma respiração profunda
-    // Frequência fundamental muito baixa e calma (80-150 Hz)
-    deepSynth.triggerAttackRelease(80, '5.0'); // Som base muito baixo e longo
+    // Acorde de harpa suave - notas em sequência rápida formando um acorde
+    const harpChord = [
+      { note: 'C4', delay: 0 },
+      { note: 'E4', delay: 0.1 },
+      { note: 'G4', delay: 0.2 },
+      { note: 'C5', delay: 0.3 },
+      { note: 'E5', delay: 0.4 },
+      { note: 'G5', delay: 0.5 }
+    ];
     
-    // Camada harmônica suave que surge gradualmente
+    // Tocar o acorde de harpa
+    harpChord.forEach(({ note, delay }) => {
+      setTimeout(() => {
+        // Som cristalino como harpa
+        bellSynth.triggerAttackRelease(note, '2.0');
+      }, delay * 200);
+    });
+    
+    // Camada harmônica suave para profundidade
     setTimeout(() => {
-      padSynth.triggerAttackRelease('C2', '4.0');
+      synth.triggerAttackRelease('C3', '3.0');
     }, 800);
     
-    // Segunda camada ainda mais suave
+    // Segunda camada harmônica
     setTimeout(() => {
-      padSynth.triggerAttackRelease('G2', '3.5');
-    }, 1600);
+      synth.triggerAttackRelease('G3', '2.5');
+    }, 1200);
     
-    // Finalização etérea e suave
+    // Fade final suave
     setTimeout(() => {
-      padSynth.triggerAttackRelease('C3', '2.5');
-    }, 2800);
-    
-    // Toque final cristalino muito sutil
-    setTimeout(() => {
-      if (synth) {
-        synth.triggerAttackRelease('C4', '1.0');
-      }
-    }, 3500);
+      synth.triggerAttackRelease('C4', '2.0');
+    }, 2000);
   };
 
   // Click sound como gota d'água suave
