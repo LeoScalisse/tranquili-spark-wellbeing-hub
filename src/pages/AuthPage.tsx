@@ -1,4 +1,5 @@
 
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
@@ -23,7 +24,7 @@ const AuthPage = () => {
   });
 
   const { login, register } = useUser();
-  const { playClickSound } = useAudio();
+  const { playTransitionSound, playClickSound } = useAudio();
   const navigate = useNavigate();
 
   const validateEmail = (email: string) => {
@@ -78,6 +79,7 @@ const AuthPage = () => {
       }
       
       if (success) {
+        playTransitionSound();
         setShowTransition(true);
         setTimeout(() => {
           navigate('/');
