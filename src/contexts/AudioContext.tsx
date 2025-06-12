@@ -7,6 +7,12 @@ interface AudioContextType {
   isSoundOn: boolean;
   toggleSound: () => void;
   
+  // Legacy properties for backward compatibility
+  isAudioEnabled: boolean;
+  toggleAudio: () => void;
+  soundProfile: string;
+  setSoundProfile: (profile: string) => void;
+  
   // Sons da página inicial
   playMoodSound: (moodType: 'happy' | 'sad' | 'calm' | 'anxious' | 'angry' | 'thoughtful') => void;
   playMoodConfirmation: () => void;
@@ -14,6 +20,7 @@ interface AudioContextType {
   // Sons do chat
   startTypingSound: () => void;
   stopTypingSound: () => void;
+  playTypingSound: () => void;
   
   // Som de conquista
   playAchievementSound: () => void;
@@ -25,6 +32,11 @@ interface AudioContextType {
   // Sons ambiente dos jogos
   startGameAmbient: (gameType: 'color' | 'memory') => void;
   stopGameAmbient: () => void;
+  
+  // Additional sound functions used by components
+  playClickSound: () => void;
+  playSuccessSound: () => void;
+  playTransitionSound: () => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -39,6 +51,7 @@ export const useAudio = () => {
 
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSoundOn, setIsSoundOn] = useState(true);
+  const [soundProfile, setSoundProfile] = useState('default');
   
   // Refs para instâncias dos sintetizadores
   const synthRef = useRef<Tone.Synth | null>(null);
@@ -105,6 +118,10 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const toggleSound = useCallback(() => {
     setIsSoundOn(prev => !prev);
   }, []);
+
+  // Legacy functions for backward compatibility
+  const toggleAudio = toggleSound;
+  const isAudioEnabled = isSoundOn;
 
   // Sons de humor da página inicial
   const playMoodSound = useCallback(async (moodType: 'happy' | 'sad' | 'calm' | 'anxious' | 'angry' | 'thoughtful') => {
@@ -187,6 +204,14 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       Tone.Transport.stop();
     }
   }, []);
+
+  // Função de digitação única
+  const playTypingSound = useCallback(async () => {
+    if (!isSoundOn || !noiseSynthRef.current) return;
+    
+    await startToneIfNeeded();
+    noiseSynthRef.current.triggerAttackRelease('0.02');
+  }, [isSoundOn, startToneIfNeeded]);
 
   // Som de conquista
   const playAchievementSound = useCallback(async () => {
@@ -297,18 +322,57 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
+  // Additional sound functions
+  const playClickSound = useCallback(async () => {
+    if (!isSoundOn || !synthRef.current) return;
+    
+    await startToneIfNeeded();
+    
+    // Som de clique suave - triangle, E5
+    synthRef.current.oscillator.type = 'triangle';
+    synthRef.current.triggerAttackRelease('E5', '0.1');
+  }, [isSoundOn, startToneIfNeeded]);
+
+  const playSuccessSound = useCallback(async () => {
+    if (!isSoundOn || !synthRef.current) return;
+    
+    await startToneIfNeeded();
+    
+    // Som de sucesso - sine, C5
+    synthRef.current.oscillator.type = 'sine';
+    synthRef.current.triggerAttackRelease('C5', '0.5');
+  }, [isSoundOn, startToneIfNeeded]);
+
+  const playTransitionSound = useCallback(async () => {
+    if (!isSoundOn || !polySynthRef.current) return;
+    
+    await startToneIfNeeded();
+    
+    // Som de transição - acorde suave
+    polySynthRef.current.set({ oscillator: { type: 'sine' } });
+    polySynthRef.current.triggerAttackRelease(['C4', 'E4', 'G4'], '1.0');
+  }, [isSoundOn, startToneIfNeeded]);
+
   const value = {
     isSoundOn,
     toggleSound,
+    isAudioEnabled,
+    toggleAudio,
+    soundProfile,
+    setSoundProfile,
     playMoodSound,
     playMoodConfirmation,
     startTypingSound,
     stopTypingSound,
+    playTypingSound,
     playAchievementSound,
     playGameSound,
     playCardSound,
     startGameAmbient,
     stopGameAmbient,
+    playClickSound,
+    playSuccessSound,
+    playTransitionSound,
   };
 
   return <AudioContext.Provider value={value}>{children}</AudioContext.Provider>;
