@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useAudio } from '@/contexts/AudioContext';
@@ -9,7 +8,7 @@ import { toast } from 'sonner';
 import AIAdviceModal from './AIAdviceModal';
 
 interface Mood {
-  id: string;
+  id: 'happy' | 'sad' | 'calm' | 'anxious' | 'angry' | 'thoughtful';
   name: string;
   emoji: string;
   color: string;
@@ -21,8 +20,8 @@ const moods: Mood[] = [
   { id: 'sad', name: 'Triste', emoji: '😢', color: 'text-blue-600', bgColor: 'bg-blue-100' },
   { id: 'calm', name: 'Calmo', emoji: '😌', color: 'text-green-600', bgColor: 'bg-green-100' },
   { id: 'anxious', name: 'Ansioso', emoji: '😰', color: 'text-orange-600', bgColor: 'bg-orange-100' },
-  { id: 'excited', name: 'Animado', emoji: '🤩', color: 'text-purple-600', bgColor: 'bg-purple-100' },
   { id: 'angry', name: 'Irritado', emoji: '😠', color: 'text-red-600', bgColor: 'bg-red-100' },
+  { id: 'thoughtful', name: 'Pensativo', emoji: '🤔', color: 'text-purple-600', bgColor: 'bg-purple-100' },
 ];
 
 const MoodCard = () => {
@@ -30,7 +29,7 @@ const MoodCard = () => {
   const [moodRegistered, setMoodRegistered] = useState(false);
   const [showAdviceModal, setShowAdviceModal] = useState(false);
   const { user, addXP, addMood, updateStreak } = useUser();
-  const { playMoodSound, playSuccessSound } = useAudio();
+  const { playMoodSound, playMoodConfirmation } = useAudio();
 
   const handleMoodSelect = (mood: Mood) => {
     setSelectedMood(mood);
@@ -62,7 +61,7 @@ const MoodCard = () => {
     addXP(10);
     updateStreak();
     setMoodRegistered(true);
-    playSuccessSound();
+    playMoodConfirmation();
     
     toast.success('Humor registrado! +10 XP', {
       icon: selectedMood.emoji,
@@ -167,7 +166,7 @@ const MoodCard = () => {
         isOpen={showAdviceModal}
         onClose={() => setShowAdviceModal(false)}
         mood={selectedMood || (todayMood ? {
-          id: 'today',
+          id: 'thoughtful' as const,
           name: todayMood.mood,
           emoji: todayMood.emoji,
           color: todayMood.color,

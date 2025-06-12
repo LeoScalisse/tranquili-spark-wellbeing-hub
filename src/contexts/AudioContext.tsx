@@ -1,20 +1,30 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import * as Tone from 'tone';
 
 interface AudioContextType {
-  playMoodSound: (moodType: string) => void;
-  playSuccessSound: () => void;
-  playTransitionSound: () => void;
-  playClickSound: () => void;
-  playTypingSound: () => void;
+  // Controles globais
+  isSoundOn: boolean;
+  toggleSound: () => void;
+  
+  // Sons da página inicial
+  playMoodSound: (moodType: 'happy' | 'sad' | 'calm' | 'anxious' | 'angry' | 'thoughtful') => void;
+  playMoodConfirmation: () => void;
+  
+  // Sons do chat
+  startTypingSound: () => void;
+  stopTypingSound: () => void;
+  
+  // Som de conquista
   playAchievementSound: () => void;
-  playGameSound: (type: 'correct' | 'incorrect') => void;
-  playBreathingSound: (type: 'inhale' | 'exhale') => void;
-  playNotificationSound: () => void;
-  isAudioEnabled: boolean;
-  toggleAudio: () => void;
-  soundProfile: 'zen' | 'nature' | 'minimal' | 'crystals';
-  setSoundProfile: (profile: 'zen' | 'nature' | 'minimal' | 'crystals') => void;
+  
+  // Sons dos jogos
+  playGameSound: (type: 'correct' | 'incorrect' | 'click' | 'victory') => void;
+  playCardSound: (type: 'flip' | 'match' | 'mismatch') => void;
+  
+  // Sons ambiente dos jogos
+  startGameAmbient: (gameType: 'color' | 'memory') => void;
+  stopGameAmbient: () => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -28,310 +38,277 @@ export const useAudio = () => {
 };
 
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
-  const [soundProfile, setSoundProfile] = useState<'zen' | 'nature' | 'minimal' | 'crystals'>('zen');
-  const [synth, setSynth] = useState<Tone.Synth | null>(null);
-  const [bellSynth, setBellSynth] = useState<Tone.MetalSynth | null>(null);
-  const [padSynth, setPadSynth] = useState<Tone.Synth | null>(null);
-  const [deepSynth, setDeepSynth] = useState<Tone.Synth | null>(null);
-  const [reverb, setReverb] = useState<Tone.Reverb | null>(null);
-  const [deepReverb, setDeepReverb] = useState<Tone.Reverb | null>(null);
+  const [isSoundOn, setIsSoundOn] = useState(true);
+  
+  // Refs para instâncias dos sintetizadores
+  const synthRef = useRef<Tone.Synth | null>(null);
+  const fmSynthRef = useRef<Tone.FMSynth | null>(null);
+  const polySynthRef = useRef<Tone.PolySynth | null>(null);
+  const noiseSynthRef = useRef<Tone.NoiseSynth | null>(null);
+  const ambientPlayerRef = useRef<Tone.Player | null>(null);
+  
+  // Refs para controle
+  const isToneStartedRef = useRef(false);
+  const typingLoopRef = useRef<Tone.Loop | null>(null);
+  const ambientLoopRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Inicialização dos sintetizadores
   useEffect(() => {
-    // Reverb natural para profundidade
-    const reverbInstance = new Tone.Reverb({
-      decay: 4,
-      wet: 0.3
+    // Sintetizador principal
+    synthRef.current = new Tone.Synth({
+      oscillator: { type: 'triangle' },
+      envelope: { attack: 0.1, decay: 0.3, sustain: 0.4, release: 0.8 }
     }).toDestination();
 
-    // Reverb profundo e envolvente para transições
-    const deepReverbInstance = new Tone.Reverb({
-      decay: 8,
-      wet: 0.7
+    // FM Synth para sons complexos
+    fmSynthRef.current = new Tone.FMSynth({
+      harmonicity: 3,
+      modulationIndex: 10,
+      envelope: { attack: 0.1, decay: 0.2, sustain: 0.3, release: 0.5 }
     }).toDestination();
 
-    // Sintetizador principal com envelope suave
-    const synthInstance = new Tone.Synth({
-      oscillator: {
-        type: 'sine'
-      },
-      envelope: {
-        attack: 0.3,
-        decay: 0.8,
-        sustain: 0.4,
-        release: 1.2
-      }
-    }).connect(reverbInstance);
+    // PolySynth para acordes
+    polySynthRef.current = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'triangle' },
+      envelope: { attack: 0.1, decay: 0.3, sustain: 0.6, release: 1.0 }
+    }).toDestination();
 
-    // Sintetizador de sino tibetano para sucessos
-    const bellInstance = new Tone.MetalSynth({
-      envelope: {
-        attack: 0.1,
-        decay: 1.4,
-        release: 2.0
-      },
-      harmonicity: 3.1,
-      modulationIndex: 16,
-      resonance: 4000,
-      octaves: 1.5
-    }).connect(reverbInstance);
-
-    // Sintetizador pad para sons ambiente
-    const padInstance = new Tone.Synth({
-      oscillator: {
-        type: 'triangle'
-      },
-      envelope: {
-        attack: 1.0,
-        decay: 0.5,
-        sustain: 0.8,
-        release: 2.0
-      }
-    }).connect(reverbInstance);
-
-    // Sintetizador profundo para transições dimensionais
-    const deepInstance = new Tone.Synth({
-      oscillator: {
-        type: 'sawtooth'
-      },
-      envelope: {
-        attack: 2.0,
-        decay: 1.0,
-        sustain: 0.9,
-        release: 4.0
-      }
-    }).connect(deepReverbInstance);
-
-    setSynth(synthInstance);
-    setBellSynth(bellInstance);
-    setPadSynth(padInstance);
-    setDeepSynth(deepInstance);
-    setReverb(reverbInstance);
-    setDeepReverb(deepReverbInstance);
+    // Noise Synth para efeitos
+    noiseSynthRef.current = new Tone.NoiseSynth({
+      noise: { type: 'white' },
+      envelope: { attack: 0.01, decay: 0.05, sustain: 0, release: 0.01 }
+    }).toDestination();
 
     return () => {
-      synthInstance.dispose();
-      bellInstance.dispose();
-      padInstance.dispose();
-      deepInstance.dispose();
-      reverbInstance.dispose();
-      deepReverbInstance.dispose();
+      // Cleanup
+      synthRef.current?.dispose();
+      fmSynthRef.current?.dispose();
+      polySynthRef.current?.dispose();
+      noiseSynthRef.current?.dispose();
+      ambientPlayerRef.current?.dispose();
+      typingLoopRef.current?.dispose();
+      if (ambientLoopRef.current) {
+        clearInterval(ambientLoopRef.current);
+      }
     };
   }, []);
 
-  const startAudio = async () => {
-    if (Tone.context.state !== 'running') {
+  // Função para iniciar o Tone.js
+  const startToneIfNeeded = useCallback(async () => {
+    if (!isToneStartedRef.current && Tone.context.state !== 'running') {
       await Tone.start();
+      isToneStartedRef.current = true;
     }
-  };
+  }, []);
 
-  // Sons de humor mais relaxantes e terapêuticos
-  const playMoodSound = async (moodType: string) => {
-    if (!isAudioEnabled || !synth || !padSynth) return;
+  // Toggle do som
+  const toggleSound = useCallback(() => {
+    setIsSoundOn(prev => !prev);
+  }, []);
+
+  // Sons de humor da página inicial
+  const playMoodSound = useCallback(async (moodType: 'happy' | 'sad' | 'calm' | 'anxious' | 'angry' | 'thoughtful') => {
+    if (!isSoundOn || !synthRef.current || !fmSynthRef.current) return;
     
-    await startAudio();
+    await startToneIfNeeded();
+
+    switch (moodType) {
+      case 'happy':
+        // Som agudo e limpo - triangle, C5
+        synthRef.current.oscillator.type = 'triangle';
+        synthRef.current.triggerAttackRelease('C5', '0.5');
+        break;
+        
+      case 'sad':
+        // Som grave e suave - sine, A3, duração longa
+        synthRef.current.oscillator.type = 'sine';
+        synthRef.current.triggerAttackRelease('A3', '1.5');
+        break;
+        
+      case 'calm':
+        // Som puro e sustentado - sine, G4, longa duração
+        synthRef.current.oscillator.type = 'sine';
+        synthRef.current.triggerAttackRelease('G4', '2.0');
+        break;
+        
+      case 'anxious':
+        // Som rápido e trêmulo - FM Synth, duas notas rápidas
+        fmSynthRef.current.triggerAttackRelease('F#5', '0.2');
+        fmSynthRef.current.triggerAttackRelease('G5', '0.2', '+0.1');
+        break;
+        
+      case 'angry':
+        // Som curto e "eletrônico" - square, D5
+        synthRef.current.oscillator.type = 'square';
+        synthRef.current.triggerAttackRelease('D5', '0.3');
+        break;
+        
+      case 'thoughtful':
+        // Som texturizado - sawtooth, A4, volume baixo
+        synthRef.current.oscillator.type = 'sawtooth';
+        synthRef.current.volume.value = -10;
+        synthRef.current.triggerAttackRelease('A4', '0.8');
+        setTimeout(() => {
+          if (synthRef.current) synthRef.current.volume.value = 0;
+        }, 1000);
+        break;
+    }
+  }, [isSoundOn, startToneIfNeeded]);
+
+  // Som de confirmação de registro de humor
+  const playMoodConfirmation = useCallback(async () => {
+    if (!isSoundOn || !synthRef.current) return;
     
-    const moodSounds: { [key: string]: () => void } = {
-      happy: () => {
-        // Melodia ascendente suave com acordes maiores
-        const happyNotes = ['C4', 'E4', 'G4'];
-        happyNotes.forEach((note, index) => {
-          synth.triggerAttackRelease(note, '0.8', `+${index * 0.3}`);
-        });
-      },
-      sad: () => {
-        // Sons contemplativos com reverb
-        padSynth.triggerAttackRelease('F3', '2.0');
-        synth.triggerAttackRelease('Ab3', '1.5', '+0.5');
-      },
-      calm: () => {
-        // Tons zen com frequências baixas
-        const calmNotes = ['C3', 'G3'];
-        calmNotes.forEach((note, index) => {
-          synth.triggerAttackRelease(note, '1.5', `+${index * 0.8}`);
-        });
-      },
-      anxious: () => {
-        // Sons que acalmam ansiedade - respiração sonora
-        synth.triggerAttackRelease('G4', '0.8');
-        synth.triggerAttackRelease('F4', '1.2', '+1.0');
-        synth.triggerAttackRelease('E4', '1.5', '+2.0');
-      },
-      excited: () => {
-        // Energia controlada com arpejos suaves
-        const excitedNotes = ['C4', 'E4', 'G4', 'C5'];
-        excitedNotes.forEach((note, index) => {
-          synth.triggerAttackRelease(note, '0.4', `+${index * 0.2}`);
-        });
-      },
-      angry: () => {
-        // Sons que dissipam raiva - progressão descendente relaxante
-        const calmingNotes = ['G4', 'F4', 'E4', 'D4', 'C4'];
-        calmingNotes.forEach((note, index) => {
-          synth.triggerAttackRelease(note, '0.8', `+${index * 0.4}`);
-        });
+    await startToneIfNeeded();
+    
+    // Ping rápido e agudo - triangle, C6
+    synthRef.current.oscillator.type = 'triangle';
+    synthRef.current.triggerAttackRelease('C6', '0.2');
+  }, [isSoundOn, startToneIfNeeded]);
+
+  // Som de digitação da IA
+  const startTypingSound = useCallback(async () => {
+    if (!isSoundOn || !noiseSynthRef.current || typingLoopRef.current) return;
+    
+    await startToneIfNeeded();
+    
+    // Loop de ruído branco em pulsos
+    typingLoopRef.current = new Tone.Loop((time) => {
+      noiseSynthRef.current?.triggerAttackRelease('0.02', time);
+    }, '0.1').start(0);
+    
+    Tone.Transport.start();
+  }, [isSoundOn, startToneIfNeeded]);
+
+  const stopTypingSound = useCallback(() => {
+    if (typingLoopRef.current) {
+      typingLoopRef.current.dispose();
+      typingLoopRef.current = null;
+      Tone.Transport.stop();
+    }
+  }, []);
+
+  // Som de conquista
+  const playAchievementSound = useCallback(async () => {
+    if (!isSoundOn || !polySynthRef.current) return;
+    
+    await startToneIfNeeded();
+    
+    // Acorde maior celebratório - C4, E4, G4, C5
+    polySynthRef.current.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '2.0');
+  }, [isSoundOn, startToneIfNeeded]);
+
+  // Sons dos jogos
+  const playGameSound = useCallback(async (type: 'correct' | 'incorrect' | 'click' | 'victory') => {
+    if (!isSoundOn || !synthRef.current || !polySynthRef.current) return;
+    
+    await startToneIfNeeded();
+
+    switch (type) {
+      case 'correct':
+        // Som agudo e positivo - sine, G5
+        synthRef.current.oscillator.type = 'sine';
+        synthRef.current.triggerAttackRelease('G5', '0.5');
+        break;
+        
+      case 'incorrect':
+        // Som grave e dissonante - sawtooth, A2
+        synthRef.current.oscillator.type = 'sawtooth';
+        synthRef.current.triggerAttackRelease('A2', '0.6');
+        break;
+        
+      case 'click':
+        // Som de interface neutro - triangle, E5
+        synthRef.current.oscillator.type = 'triangle';
+        synthRef.current.triggerAttackRelease('E5', '0.1');
+        break;
+        
+      case 'victory':
+        // Acorde maior - triangle
+        polySynthRef.current.set({ oscillator: { type: 'triangle' } });
+        polySynthRef.current.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '3.0');
+        break;
+    }
+  }, [isSoundOn, startToneIfNeeded]);
+
+  // Sons das cartas (jogo da memória)
+  const playCardSound = useCallback(async (type: 'flip' | 'match' | 'mismatch') => {
+    if (!isSoundOn || !synthRef.current) return;
+    
+    await startToneIfNeeded();
+
+    switch (type) {
+      case 'flip':
+        // Som rápido e agudo - triangle, F#5
+        synthRef.current.oscillator.type = 'triangle';
+        synthRef.current.triggerAttackRelease('F#5', '0.2');
+        break;
+        
+      case 'match':
+        // Som suave e positivo - sine, C5
+        synthRef.current.oscillator.type = 'sine';
+        synthRef.current.triggerAttackRelease('C5', '0.8');
+        break;
+        
+      case 'mismatch':
+        // Som ríspido e grave - square, C3
+        synthRef.current.oscillator.type = 'square';
+        synthRef.current.triggerAttackRelease('C3', '0.4');
+        break;
+    }
+  }, [isSoundOn, startToneIfNeeded]);
+
+  // Som ambiente dos jogos
+  const startGameAmbient = useCallback(async (gameType: 'color' | 'memory') => {
+    if (!isSoundOn) return;
+    
+    await startToneIfNeeded();
+    
+    // Simulação de ambiente com tons contínuos
+    const playAmbientTone = () => {
+      if (!synthRef.current || !isSoundOn) return;
+      
+      if (gameType === 'color') {
+        // Trilha relaxante para jogo de cores
+        synthRef.current.oscillator.type = 'sine';
+        synthRef.current.volume.value = -20;
+        synthRef.current.triggerAttackRelease('C3', '4.0');
+      } else {
+        // Sons de natureza simulados para jogo da memória
+        synthRef.current.oscillator.type = 'triangle';
+        synthRef.current.volume.value = -18;
+        synthRef.current.triggerAttackRelease('G3', '3.0');
       }
     };
     
-    const moodSound = moodSounds[moodType] || moodSounds.calm;
-    moodSound();
-  };
+    // Iniciar loop ambiente
+    playAmbientTone();
+    ambientLoopRef.current = setInterval(playAmbientTone, 5000);
+  }, [isSoundOn, startToneIfNeeded]);
 
-  // Som de sucesso mais sutil
-  const playSuccessSound = async () => {
-    if (!isAudioEnabled || !bellSynth) return;
-    
-    await startAudio();
-    
-    // Carrilhão mais sutil e breve
-    const successNotes = [396, 528]; // Frequências solfeggio reduzidas
-    successNotes.forEach((freq, index) => {
-      bellSynth.triggerAttackRelease(freq, '0.8', `+${index * 0.3}`);
-    });
-  };
-
-  // Som de transição como acorde de harpa com fade
-  const playTransitionSound = async () => {
-    if (!isAudioEnabled || !bellSynth || !synth) return;
-    
-    await startAudio();
-    
-    // Acorde de harpa suave - notas em sequência rápida formando um acorde
-    const harpChord = [
-      { note: 'C4', delay: 0 },
-      { note: 'E4', delay: 0.1 },
-      { note: 'G4', delay: 0.2 },
-      { note: 'C5', delay: 0.3 },
-      { note: 'E5', delay: 0.4 },
-      { note: 'G5', delay: 0.5 }
-    ];
-    
-    // Tocar o acorde de harpa
-    harpChord.forEach(({ note, delay }) => {
-      setTimeout(() => {
-        // Som cristalino como harpa
-        bellSynth.triggerAttackRelease(note, '2.0');
-      }, delay * 200);
-    });
-    
-    // Camada harmônica suave para profundidade
-    setTimeout(() => {
-      synth.triggerAttackRelease('C3', '3.0');
-    }, 800);
-    
-    // Segunda camada harmônica
-    setTimeout(() => {
-      synth.triggerAttackRelease('G3', '2.5');
-    }, 1200);
-    
-    // Fade final suave
-    setTimeout(() => {
-      synth.triggerAttackRelease('C4', '2.0');
-    }, 2000);
-  };
-
-  // Click sound como gota d'água suave
-  const playClickSound = async () => {
-    if (!isAudioEnabled || !synth) return;
-    
-    await startAudio();
-    
-    // Som de gota d'água suave
-    synth.triggerAttackRelease('E5', '0.1');
-    synth.triggerAttackRelease('E4', '0.05', '+0.05');
-  };
-
-  // Som de digitação como folhas rustling
-  const playTypingSound = async () => {
-    if (!isAudioEnabled || !synth) return;
-    
-    await startAudio();
-    
-    // Som muito sutil de folhas
-    const randomNote = ['F#5', 'G5', 'G#5'][Math.floor(Math.random() * 3)];
-    synth.triggerAttackRelease(randomNote, '0.02');
-  };
-
-  // Som de conquista como sino de meditação
-  const playAchievementSound = async () => {
-    if (!isAudioEnabled || !bellSynth || !synth) return;
-    
-    await startAudio();
-    
-    // Sino de meditação principal
-    bellSynth.triggerAttackRelease(528, '3.0'); // Frequência de cura
-    
-    // Harmônicos suaves
-    setTimeout(() => {
-      synth.triggerAttackRelease('C5', '2.0');
-    }, 500);
-    
-    setTimeout(() => {
-      synth.triggerAttackRelease('G5', '1.5');
-    }, 1000);
-  };
-
-  // Sons para jogos mais terapêuticos
-  const playGameSound = async (type: 'correct' | 'incorrect') => {
-    if (!isAudioEnabled || !synth || !bellSynth) return;
-    
-    await startAudio();
-    
-    if (type === 'correct') {
-      // Som de cristal harmônico (528 Hz - frequência de cura)
-      bellSynth.triggerAttackRelease(528, '0.8');
-    } else {
-      // Som de almofada suave (não punitivo)
-      synth.triggerAttackRelease('F3', '0.5');
-      synth.triggerAttackRelease('C3', '0.3', '+0.2');
+  const stopGameAmbient = useCallback(() => {
+    if (ambientLoopRef.current) {
+      clearInterval(ambientLoopRef.current);
+      ambientLoopRef.current = null;
     }
-  };
-
-  // Novos sons para respiração guiada
-  const playBreathingSound = async (type: 'inhale' | 'exhale') => {
-    if (!isAudioEnabled || !padSynth) return;
-    
-    await startAudio();
-    
-    if (type === 'inhale') {
-      // Som ascendente suave para inspiração
-      padSynth.triggerAttackRelease('C3', '2.0');
-      padSynth.triggerAttackRelease('G3', '2.0', '+0.5');
-    } else {
-      // Som descendente suave para expiração  
-      padSynth.triggerAttackRelease('G3', '2.5');
-      padSynth.triggerAttackRelease('C3', '2.5', '+0.5');
+    // Restaurar volume normal
+    if (synthRef.current) {
+      synthRef.current.volume.value = 0;
     }
-  };
-
-  // Som de notificação relaxante
-  const playNotificationSound = async () => {
-    if (!isAudioEnabled || !bellSynth) return;
-    
-    await startAudio();
-    
-    // Som suave de sino para alertas sem stress
-    bellSynth.triggerAttackRelease(396, '1.0'); // Frequência de libertação
-  };
-
-  const toggleAudio = () => {
-    setIsAudioEnabled(!isAudioEnabled);
-  };
+  }, []);
 
   const value = {
+    isSoundOn,
+    toggleSound,
     playMoodSound,
-    playSuccessSound,
-    playTransitionSound,
-    playClickSound,
-    playTypingSound,
+    playMoodConfirmation,
+    startTypingSound,
+    stopTypingSound,
     playAchievementSound,
     playGameSound,
-    playBreathingSound,
-    playNotificationSound,
-    isAudioEnabled,
-    toggleAudio,
-    soundProfile,
-    setSoundProfile,
+    playCardSound,
+    startGameAmbient,
+    stopGameAmbient,
   };
 
   return <AudioContext.Provider value={value}>{children}</AudioContext.Provider>;

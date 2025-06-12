@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
@@ -88,7 +87,7 @@ const achievements: Achievement[] = [
 
 const AchievementsPage = () => {
   const { user, unlockAchievement } = useUser();
-  const { playClickSound, playAchievementSound } = useAudio();
+  const { playAchievementSound } = useAudio();
   const navigate = useNavigate();
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -161,7 +160,6 @@ const AchievementsPage = () => {
   };
 
   const handleAchievementClick = (achievement: Achievement) => {
-    playClickSound();
     setSelectedAchievement(achievement);
     setShowModal(true);
   };
@@ -177,10 +175,7 @@ const AchievementsPage = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => {
-                playClickSound();
-                navigate('/');
-              }}
+              onClick={() => navigate('/')}
               className="mr-4"
             >
               <ArrowLeft className="h-4 w-4" />

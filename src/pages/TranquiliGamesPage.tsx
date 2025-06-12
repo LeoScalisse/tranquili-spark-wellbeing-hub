@@ -1,4 +1,3 @@
-
 import { useNavigate } from 'react-router-dom';
 import { useAudio } from '@/contexts/AudioContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Gamepad2, Brain, Puzzle, Clock, Trophy } from 'lucide-react';
 import ColorConfusionGame from '@/components/games/ColorConfusionGame';
 import MemoryFragmentsGame from '@/components/games/MemoryFragmentsGame';
+import GameAudioWrapper from '@/components/GameAudioWrapper';
 import { useState } from 'react';
 
 interface Game {
@@ -42,16 +42,16 @@ const games: Game[] = [
 
 const TranquiliGamesPage = () => {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
-  const { playClickSound } = useAudio();
+  const { playGameSound } = useAudio();
   const navigate = useNavigate();
 
   const handleGameSelect = (gameId: string) => {
-    playClickSound();
+    playGameSound('click');
     setSelectedGame(gameId);
   };
 
   const handleBackToMenu = () => {
-    playClickSound();
+    playGameSound('click');
     setSelectedGame(null);
   };
 
@@ -65,11 +65,19 @@ const TranquiliGamesPage = () => {
   };
 
   if (selectedGame === 'color-confusion') {
-    return <ColorConfusionGame onBack={handleBackToMenu} />;
+    return (
+      <GameAudioWrapper gameType="color">
+        <ColorConfusionGame onBack={handleBackToMenu} />
+      </GameAudioWrapper>
+    );
   }
 
   if (selectedGame === 'memory-fragments') {
-    return <MemoryFragmentsGame onBack={handleBackToMenu} />;
+    return (
+      <GameAudioWrapper gameType="memory">
+        <MemoryFragmentsGame onBack={handleBackToMenu} />
+      </GameAudioWrapper>
+    );
   }
 
   return (
@@ -81,7 +89,7 @@ const TranquiliGamesPage = () => {
               variant="ghost"
               size="icon"
               onClick={() => {
-                playClickSound();
+                playGameSound('click');
                 navigate('/');
               }}
               className="mr-4"
@@ -174,7 +182,7 @@ const TranquiliGamesPage = () => {
                 <h4 className="font-medium mb-2">😌 Foco no Bem-estar</h4>
                 <p className="leading-relaxed">
                   Diferente de jogos tradicionais, os TranquiliGames priorizam o relaxamento 
-                  e a redução do stress, criando uma experiência divertida e terapêutica.
+                  e a redução do stress, criando uma experiência divertiva e terapêutica.
                 </p>
               </div>
             </div>
