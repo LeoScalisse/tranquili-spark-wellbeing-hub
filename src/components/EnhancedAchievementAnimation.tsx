@@ -1,7 +1,15 @@
+
 import React, { useEffect, useState } from 'react';
 import { Trophy } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import type { Achievement } from '@/contexts/AchievementAnimationContext';
+
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  category: 'mood' | 'streak' | 'interaction' | 'exploration';
+}
 
 interface EnhancedAchievementAnimationProps {
   achievement: Achievement | null;

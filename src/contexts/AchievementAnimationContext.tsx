@@ -2,12 +2,12 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useAudio } from './AudioContext';
 
-export interface Achievement {
+interface Achievement {
   id: string;
   title: string;
   description: string;
   icon: React.ReactNode;
-  category: 'mood' | 'streak' | 'interaction' | 'exploration' | 'games' | 'social';
+  category: 'mood' | 'streak' | 'interaction' | 'exploration';
 }
 
 interface AchievementAnimationContextType {
