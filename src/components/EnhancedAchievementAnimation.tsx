@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Trophy } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Achievement {
   id: string;
@@ -23,6 +24,7 @@ const EnhancedAchievementAnimation: React.FC<EnhancedAchievementAnimationProps> 
 }) => {
   const [showFlash, setShowFlash] = useState(false);
   const [showContent, setShowContent] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (isVisible && achievement) {
@@ -50,11 +52,15 @@ const EnhancedAchievementAnimation: React.FC<EnhancedAchievementAnimationProps> 
 
   if (!achievement || !isVisible) return null;
 
+  // Reduzir número de partículas no mobile para melhor performance
+  const particleCount = isMobile ? 25 : 50;
+  const sparkleCount = isMobile ? 10 : 20;
+
   // Criar partículas douradas
-  const goldParticles = Array.from({ length: 50 }).map((_, i) => (
+  const goldParticles = Array.from({ length: particleCount }).map((_, i) => (
     <div
       key={`gold-${i}`}
-      className="absolute w-2 h-2 bg-yellow-400 rounded-full"
+      className={`absolute bg-yellow-400 rounded-full ${isMobile ? 'w-1.5 h-1.5' : 'w-2 h-2'}`}
       style={{
         top: `${Math.random() * 100}%`,
         left: `${Math.random() * 100}%`,
@@ -65,10 +71,10 @@ const EnhancedAchievementAnimation: React.FC<EnhancedAchievementAnimationProps> 
   ));
 
   // Criar sparkles grandes
-  const bigSparkles = Array.from({ length: 20 }).map((_, i) => (
+  const bigSparkles = Array.from({ length: sparkleCount }).map((_, i) => (
     <div
       key={`sparkle-${i}`}
-      className="absolute w-4 h-4 bg-white rounded-full animate-pulse"
+      className={`absolute bg-white rounded-full animate-pulse ${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`}
       style={{
         top: `${Math.random() * 100}%`,
         left: `${Math.random() * 100}%`,
@@ -78,8 +84,9 @@ const EnhancedAchievementAnimation: React.FC<EnhancedAchievementAnimationProps> 
     />
   ));
 
-  // Criar ondas de luz
-  const lightWaves = Array.from({ length: 3 }).map((_, i) => (
+  // Criar ondas de luz (reduzidas no mobile)
+  const waveCount = isMobile ? 2 : 3;
+  const lightWaves = Array.from({ length: waveCount }).map((_, i) => (
     <div
       key={`wave-${i}`}
       className="absolute inset-0 rounded-full border-4 border-yellow-300 opacity-30"
@@ -116,35 +123,49 @@ const EnhancedAchievementAnimation: React.FC<EnhancedAchievementAnimationProps> 
         
         {/* Conteúdo da conquista */}
         {showContent && (
-          <div className="relative h-full flex flex-col items-center justify-center text-center p-4 animate-achievement-appear">
+          <div className={`relative h-full flex flex-col items-center justify-center text-center animate-achievement-appear ${isMobile ? 'p-4' : 'p-8'}`}>
             {/* Ícone principal */}
-            <div className="text-white mb-8 animate-icon-celebration">
-              <div className="w-32 h-32 mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border-4 border-white/40">
-                <Trophy className="w-20 h-20" />
+            <div className="text-white mb-4 md:mb-8 animate-icon-celebration">
+              <div className={`mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border-4 border-white/40 ${
+                isMobile ? 'w-20 h-20' : 'w-32 h-32'
+              }`}>
+                <Trophy className={isMobile ? 'w-12 h-12' : 'w-20 h-20'} />
               </div>
             </div>
             
             {/* Textos */}
-            <div className="space-y-4 animate-text-reveal">
-              <h1 className="text-6xl font-bold text-white drop-shadow-2xl animate-title-bounce">
+            <div className="space-y-2 md:space-y-4 animate-text-reveal max-w-xs md:max-w-md">
+              <h1 className={`font-bold text-white drop-shadow-2xl animate-title-bounce ${
+                isMobile ? 'text-3xl' : 'text-6xl'
+              }`}>
                 CONQUISTA
               </h1>
-              <h2 className="text-5xl font-bold text-white drop-shadow-2xl animate-title-bounce">
+              <h2 className={`font-bold text-white drop-shadow-2xl animate-title-bounce ${
+                isMobile ? 'text-2xl' : 'text-5xl'
+              }`}>
                 DESBLOQUEADA!
               </h2>
-              <div className="bg-white/20 backdrop-blur-md rounded-2xl p-6 border-2 border-white/40 max-w-md mx-auto">
-                <h3 className="text-3xl font-semibold text-white mb-2">
+              <div className={`bg-white/20 backdrop-blur-md rounded-2xl border-2 border-white/40 mx-auto ${
+                isMobile ? 'p-4 max-w-xs' : 'p-6 max-w-md'
+              }`}>
+                <h3 className={`font-semibold text-white mb-2 ${
+                  isMobile ? 'text-xl' : 'text-3xl'
+                }`}>
                   {achievement.title}
                 </h3>
-                <p className="text-xl text-white/90">
+                <p className={`text-white/90 ${
+                  isMobile ? 'text-sm' : 'text-xl'
+                }`}>
                   {achievement.description}
                 </p>
               </div>
             </div>
             
             {/* Instruções */}
-            <div className="mt-8 text-white/80 animate-pulse">
-              <p className="text-lg">Clique para continuar ou aguarde...</p>
+            <div className={`text-white/80 animate-pulse ${
+              isMobile ? 'mt-4 text-sm' : 'mt-8 text-lg'
+            }`}>
+              <p>Toque para continuar ou aguarde...</p>
             </div>
           </div>
         )}

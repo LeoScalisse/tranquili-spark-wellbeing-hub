@@ -265,6 +265,36 @@
     }
   }
 
+  /* Mobile-optimized animations */
+  @keyframes mobile-float-particles {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-15px) rotate(180deg);
+    }
+  }
+
+  @keyframes mobile-achievement-appear {
+    0% {
+      opacity: 0;
+      transform: scale(0.7) translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @keyframes mobile-title-bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
   .sparkle {
     position: absolute;
     width: 10px;
@@ -304,6 +334,25 @@
 
   .animate-text-reveal {
     animation: text-reveal 0.8s ease-out 1s both;
+  }
+
+  /* Mobile-specific animations */
+  @media (max-width: 768px) {
+    .animate-float-particles {
+      animation: mobile-float-particles 2s ease-in-out infinite;
+    }
+
+    .animate-achievement-appear {
+      animation: mobile-achievement-appear 0.8s ease-out 0.3s both;
+    }
+
+    .animate-title-bounce {
+      animation: mobile-title-bounce 1.2s ease-in-out infinite;
+    }
+
+    .animate-icon-celebration {
+      animation: icon-celebration 1.5s ease-in-out infinite;
+    }
   }
 }
 
