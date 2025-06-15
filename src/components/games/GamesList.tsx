@@ -1,5 +1,5 @@
 
-import { Brain, Puzzle, Sparkles } from 'lucide-react';
+import { Brain, Puzzle } from 'lucide-react';
 import GameCard from './GameCard';
 
 interface Game {
@@ -38,16 +38,6 @@ export const games: Game[] = [
     estimatedTime: '5-10 min',
     benefits: ['Memória', 'Relaxamento', 'Criatividade'],
     categories: ['memory', 'working-memory', 'flexibility']
-  },
-  {
-    id: 'tranquili-match',
-    title: 'TranquiliMatch+',
-    description: 'Jogo match-3 relaxante com fases infinitas, trilha sonora lo-fi e elementos sensoriais para promover tranquilidade.',
-    icon: <Sparkles className="h-8 w-8" />,
-    difficulty: 'Fácil',
-    estimatedTime: 'Ilimitado',
-    benefits: ['Relaxamento', 'Foco', 'Bem-estar', 'Tranquilidade'],
-    categories: ['attention', 'memory', 'relaxation']
   }
 ];
 

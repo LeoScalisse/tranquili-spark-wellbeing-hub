@@ -6,7 +6,7 @@ import { useAudio } from '@/contexts/AudioContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Trophy, Lock, Calendar, Star, Target, Zap, Heart, Gamepad2, BarChart3, Palette, Volume2, MessageCircle, Gift, Crown, Flame } from 'lucide-react';
+import { ArrowLeft, Trophy, Lock, Calendar, Star, Target, Zap } from 'lucide-react';
 import AchievementModal from '@/components/AchievementModal';
 import AchievementUnlockAnimation from '@/components/AchievementUnlockAnimation';
 import { useAchievementAnimation } from '@/contexts/AchievementAnimationContext';
@@ -16,7 +16,7 @@ interface Achievement {
   title: string;
   description: string;
   icon: React.ReactNode;
-  category: 'mood' | 'streak' | 'interaction' | 'exploration' | 'games' | 'social';
+  category: 'mood' | 'streak' | 'interaction' | 'exploration';
   requirement: number;
   currentProgress?: number;
 }
@@ -85,87 +85,6 @@ const achievements: Achievement[] = [
     icon: <Trophy className="h-6 w-6" />,
     category: 'streak',
     requirement: 100
-  },
-
-  {
-    id: 'mood_master',
-    title: 'Mestre do Humor',
-    description: 'Registre todos os 8 tipos de humor disponíveis',
-    icon: <Heart className="h-6 w-6" />,
-    category: 'mood',
-    requirement: 8
-  },
-  {
-    id: 'games_beginner',
-    title: 'Jogador Iniciante',
-    description: 'Jogue qualquer jogo da Tranquili Games pela primeira vez',
-    icon: <Gamepad2 className="h-6 w-6" />,
-    category: 'games',
-    requirement: 1
-  },
-  {
-    id: 'games_enthusiast',
-    title: 'Entusiasta dos Jogos',
-    description: 'Jogue todos os jogos disponíveis pelo menos uma vez',
-    icon: <Crown className="h-6 w-6" />,
-    category: 'games',
-    requirement: 2
-  },
-  {
-    id: 'report_viewer',
-    title: 'Analista de Bem-estar',
-    description: 'Visualize seu relatório de humor pela primeira vez',
-    icon: <BarChart3 className="h-6 w-6" />,
-    category: 'exploration',
-    requirement: 1
-  },
-  {
-    id: 'audio_explorer',
-    title: 'Maestro dos Sons',
-    description: 'Experimente diferentes configurações de áudio',
-    icon: <Volume2 className="h-6 w-6" />,
-    category: 'exploration',
-    requirement: 1
-  },
-  {
-    id: 'chat_conversationalist',
-    title: 'Conversador Dedicado',
-    description: 'Tenha 10 conversas diferentes com a Tranquilinha',
-    icon: <MessageCircle className="h-6 w-6" />,
-    category: 'interaction',
-    requirement: 10
-  },
-  {
-    id: 'daily_warrior',
-    title: 'Guerreiro Diário',
-    description: 'Complete uma sequência de 14 dias registrando humor',
-    icon: <Flame className="h-6 w-6" />,
-    category: 'streak',
-    requirement: 14
-  },
-  {
-    id: 'theme_designer',
-    title: 'Designer de Temas',
-    description: 'Altere entre temas mais de 5 vezes em uma sessão',
-    icon: <Palette className="h-6 w-6" />,
-    category: 'exploration',
-    requirement: 5
-  },
-  {
-    id: 'achievement_hunter',
-    title: 'Caçador de Conquistas',
-    description: 'Desbloqueie 5 conquistas diferentes',
-    icon: <Gift className="h-6 w-6" />,
-    category: 'social',
-    requirement: 5
-  },
-  {
-    id: 'tranquili_veteran',
-    title: 'Veterano Tranquili',
-    description: 'Use o app por 7 dias diferentes (não consecutivos)',
-    icon: <Crown className="h-6 w-6" />,
-    category: 'social',
-    requirement: 7
   }
 ];
 
@@ -186,51 +105,13 @@ const AchievementsPage = () => {
         if (achievement.id === 'level_5') {
           return user.level;
         }
-        if (achievement.id === 'mood_master') {
-          // Contar quantos tipos únicos de humor foram registrados
-          const uniqueMoods = new Set(user.moods.map(mood => mood.mood));
-          return uniqueMoods.size;
-        }
         return user.moods.length;
       case 'streak':
         return user.streak;
       case 'interaction':
-        if (achievement.id === 'chat_conversationalist') {
-          return parseInt(localStorage.getItem('chat_conversations_count') || '0');
-        }
         return localStorage.getItem('has_chatted') ? 1 : 0;
       case 'exploration':
-        if (achievement.id === 'theme_explorer') {
-          return usedThemes.length;
-        }
-        if (achievement.id === 'report_viewer') {
-          return localStorage.getItem('has_viewed_report') ? 1 : 0;
-        }
-        if (achievement.id === 'audio_explorer') {
-          return localStorage.getItem('has_changed_audio') ? 1 : 0;
-        }
-        if (achievement.id === 'theme_designer') {
-          return parseInt(localStorage.getItem('theme_changes_count') || '0');
-        }
         return usedThemes.length;
-      case 'games':
-        if (achievement.id === 'games_beginner') {
-          return localStorage.getItem('has_played_games') ? 1 : 0;
-        }
-        if (achievement.id === 'games_enthusiast') {
-          const playedGames = JSON.parse(localStorage.getItem('played_games') || '[]');
-          return playedGames.length;
-        }
-        return 0;
-      case 'social':
-        if (achievement.id === 'achievement_hunter') {
-          return user.achievements.length;
-        }
-        if (achievement.id === 'tranquili_veteran') {
-          const usageDays = JSON.parse(localStorage.getItem('app_usage_days') || '[]');
-          return usageDays.length;
-        }
-        return 0;
       default:
         return 0;
     }
@@ -265,8 +146,6 @@ const AchievementsPage = () => {
       case 'streak': return 'text-green-500';
       case 'interaction': return 'text-purple-500';
       case 'exploration': return 'text-orange-500';
-      case 'games': return 'text-red-500';
-      case 'social': return 'text-pink-500';
       default: return 'text-gray-500';
     }
   };
@@ -277,8 +156,6 @@ const AchievementsPage = () => {
       case 'streak': return 'Sequência';
       case 'interaction': return 'Interação';
       case 'exploration': return 'Exploração';
-      case 'games': return 'Jogos';
-      case 'social': return 'Social';
       default: return 'Geral';
     }
   };
@@ -388,10 +265,10 @@ const AchievementsPage = () => {
           </CardHeader>
           
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <h4 className="font-medium text-blue-500 mb-2">💙 Humor</h4>
-                <p>Registre seu humor diariamente e experimente todos os tipos disponíveis.</p>
+                <p>Registre seu humor diariamente para desbloquear conquistas relacionadas ao bem-estar emocional.</p>
               </div>
               
               <div>
@@ -401,22 +278,12 @@ const AchievementsPage = () => {
               
               <div>
                 <h4 className="font-medium text-purple-500 mb-2">💬 Interação</h4>
-                <p>Converse frequentemente com a Tranquilinha e explore funcionalidades.</p>
+                <p>Converse com a Tranquilinha e explore as funcionalidades do aplicativo.</p>
               </div>
               
               <div>
                 <h4 className="font-medium text-orange-500 mb-2">🎨 Exploração</h4>
-                <p>Experimente temas, visualize relatórios e configure áudio.</p>
-              </div>
-
-              <div>
-                <h4 className="font-medium text-red-500 mb-2">🎮 Jogos</h4>
-                <p>Jogue todos os mini-games disponíveis na Tranquili Games.</p>
-              </div>
-
-              <div>
-                <h4 className="font-medium text-pink-500 mb-2">👥 Social</h4>
-                <p>Use o app regularmente e desbloqueie outras conquistas.</p>
+                <p>Experimente diferentes temas e explore todas as seções do app.</p>
               </div>
             </div>
           </CardContent>
