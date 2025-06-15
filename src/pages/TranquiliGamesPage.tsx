@@ -1,4 +1,3 @@
-
 import { useNavigate } from 'react-router-dom';
 import { useAudio } from '@/contexts/AudioContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Gamepad2, Brain, Puzzle, Clock, Trophy, Zap } from 'lucide-react';
 import ColorConfusionGame from '@/components/games/ColorConfusionGame';
 import MemoryFragmentsGame from '@/components/games/MemoryFragmentsGame';
-import TranquiliRunGame from '@/components/games/TranquiliRunGame';
+import TranquiliRun3D from '@/components/games/TranquiliRun3D';
 import GameAudioWrapper from '@/components/GameAudioWrapper';
 import { useState } from 'react';
 
@@ -24,12 +23,12 @@ interface Game {
 const games: Game[] = [
   {
     id: 'tranquili-run',
-    title: 'Tranquili Run+',
-    description: 'Runner infinito relaxante com Tranquilinho. Corra por paisagens zen coletando calma e evitando estresse.',
+    title: 'Tranquili Run+ 3D',
+    description: 'Runner infinito 3D relaxante com Tranquilinho. Corra por paisagens zen tridimensionais coletando calma e evitando estresse.',
     icon: <Zap className="h-8 w-8" />,
     difficulty: 'Fácil',
     estimatedTime: '5-15 min',
-    benefits: ['Reflexos', 'Concentração', 'Relaxamento', 'Diversão zen']
+    benefits: ['Reflexos', 'Concentração', 'Relaxamento', 'Imersão 3D']
   },
   {
     id: 'color-confusion',
@@ -78,7 +77,7 @@ const TranquiliGamesPage = () => {
   if (selectedGame === 'tranquili-run') {
     return (
       <GameAudioWrapper gameType="runner">
-        <TranquiliRunGame onBack={handleBackToMenu} />
+        <TranquiliRun3D onBack={handleBackToMenu} />
       </GameAudioWrapper>
     );
   }
