@@ -17,7 +17,6 @@ import { achievements, Achievement } from './achievementData';
 const AchievementsPage = () => {
   const { user, unlockAchievement } = useUser();
   const { usedThemes } = useTheme();
-  const { showAchievementAnimation } = useAchievementAnimation();
   const navigate = useNavigate();
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -106,22 +105,21 @@ const AchievementsPage = () => {
     return user?.achievements.includes(achievement.id) || false;
   };
 
-  const checkAndUnlockAchievements = () => {
+  const silentlyCheckAndUnlockAchievements = () => {
     if (!user) return;
 
-    const achievementToUnlock = achievements.find(achievement => {
+    // Quietly unlock achievements that should be unlocked without showing animations
+    achievements.forEach(achievement => {
       const progress = getProgress(achievement);
-      return progress >= achievement.requirement && !isUnlocked(achievement);
+      if (progress >= achievement.requirement && !isUnlocked(achievement)) {
+        unlockAchievement(achievement.id);
+      }
     });
-    
-    if (achievementToUnlock) {
-      unlockAchievement(achievementToUnlock.id);
-      showAchievementAnimation(achievementToUnlock);
-    }
   };
 
   useEffect(() => {
-    checkAndUnlockAchievements();
+    // Only silently sync achievements on the achievements page, no animations
+    silentlyCheckAndUnlockAchievements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, usedThemes.length]);
 
