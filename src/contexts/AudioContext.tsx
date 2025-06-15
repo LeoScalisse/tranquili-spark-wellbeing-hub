@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import * as Tone from 'tone';
 
@@ -213,14 +212,41 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     noiseSynthRef.current.triggerAttackRelease('0.02');
   }, [isSoundOn, startToneIfNeeded]);
 
-  // Som de conquista
+  // Som de conquista aprimorado
   const playAchievementSound = useCallback(async () => {
-    if (!isSoundOn || !polySynthRef.current) return;
+    if (!isSoundOn || !polySynthRef.current || !synthRef.current) return;
     
     await startToneIfNeeded();
     
-    // Acorde maior celebratório - C4, E4, G4, C5
-    polySynthRef.current.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '2.0');
+    // Sequência épica de conquista
+    // Primeiro acorde triunfante
+    polySynthRef.current.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '1.0');
+    
+    // Segundo acorde mais alto após um delay
+    setTimeout(() => {
+      if (polySynthRef.current) {
+        polySynthRef.current.triggerAttackRelease(['F4', 'A4', 'C5', 'F5'], '1.5');
+      }
+    }, 800);
+    
+    // Nota final aguda e celebratória
+    setTimeout(() => {
+      if (synthRef.current) {
+        synthRef.current.oscillator.type = 'triangle';
+        synthRef.current.triggerAttackRelease('G5', '2.0');
+      }
+    }, 1600);
+    
+    // Efeito de reverb simulado com notas adicionais
+    setTimeout(() => {
+      if (synthRef.current) {
+        synthRef.current.volume.value = -10;
+        synthRef.current.triggerAttackRelease('C6', '1.0');
+        setTimeout(() => {
+          if (synthRef.current) synthRef.current.volume.value = 0;
+        }, 1000);
+      }
+    }, 2200);
   }, [isSoundOn, startToneIfNeeded]);
 
   // Sons dos jogos

@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { UserProvider } from "./contexts/UserContext";
 import { AudioProvider } from "./contexts/AudioContext";
+import { AchievementAnimationProvider } from "./contexts/AchievementAnimationContext";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
 import ChatPage from "./pages/ChatPage";
@@ -17,6 +18,7 @@ import TranquiliSpacePage from "./pages/TranquiliSpacePage";
 import TranquiliGamesPage from "./pages/TranquiliGamesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
+import GlobalAchievementWrapper from "./components/GlobalAchievementWrapper";
 
 const queryClient = new QueryClient();
 
@@ -27,44 +29,47 @@ const App = () => {
         <ThemeProvider>
           <UserProvider>
             <AudioProvider>
-              <BrowserRouter>
-                <Toaster />
-                <Sonner />
-                <Routes>
-                  <Route path="/auth" element={<AuthPage />} />
-                  <Route path="/" element={
-                    <ProtectedRoute>
-                      <HomePage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/chat" element={
-                    <ProtectedRoute>
-                      <ChatPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/reports" element={
-                    <ProtectedRoute>
-                      <ReportPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/achievements" element={
-                    <ProtectedRoute>
-                      <AchievementsPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/shop" element={
-                    <ProtectedRoute>
-                      <TranquiliSpacePage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/games" element={
-                    <ProtectedRoute>
-                      <TranquiliGamesPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
+              <AchievementAnimationProvider>
+                <BrowserRouter>
+                  <Toaster />
+                  <Sonner />
+                  <GlobalAchievementWrapper />
+                  <Routes>
+                    <Route path="/auth" element={<AuthPage />} />
+                    <Route path="/" element={
+                      <ProtectedRoute>
+                        <HomePage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/chat" element={
+                      <ProtectedRoute>
+                        <ChatPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/reports" element={
+                      <ProtectedRoute>
+                        <ReportPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/achievements" element={
+                      <ProtectedRoute>
+                        <AchievementsPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/shop" element={
+                      <ProtectedRoute>
+                        <TranquiliSpacePage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/games" element={
+                      <ProtectedRoute>
+                        <TranquiliGamesPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </AchievementAnimationProvider>
             </AudioProvider>
           </UserProvider>
         </ThemeProvider>

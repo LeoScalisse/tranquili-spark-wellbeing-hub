@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Trophy, Lock, Calendar, Star, Target, Zap } from 'lucide-react';
 import AchievementModal from '@/components/AchievementModal';
 import AchievementUnlockAnimation from '@/components/AchievementUnlockAnimation';
+import { useAchievementAnimation } from '@/contexts/AchievementAnimationContext';
 
 interface Achievement {
   id: string;
@@ -89,11 +90,10 @@ const achievements: Achievement[] = [
 const AchievementsPage = () => {
   const { user, unlockAchievement } = useUser();
   const { playAchievementSound } = useAudio();
+  const { showAchievementAnimation } = useAchievementAnimation();
   const navigate = useNavigate();
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [showUnlockAnimation, setShowUnlockAnimation] = useState(false);
-  const [unlockedAchievementDetails, setUnlockedAchievementDetails] = useState<Achievement | null>(null);
 
   const getProgress = (achievement: Achievement): number => {
     if (!user) return 0;
@@ -131,9 +131,7 @@ const AchievementsPage = () => {
     
     if (achievementToUnlock) {
       unlockAchievement(achievementToUnlock.id);
-      playAchievementSound();
-      setUnlockedAchievementDetails(achievementToUnlock);
-      setShowUnlockAnimation(true);
+      showAchievementAnimation(achievementToUnlock);
     }
   };
 
@@ -291,18 +289,6 @@ const AchievementsPage = () => {
           </CardContent>
         </Card>
       </div>
-
-      {showUnlockAnimation && (
-        <AchievementUnlockAnimation
-          achievement={unlockedAchievementDetails}
-          onAnimationEnd={() => {
-            setShowUnlockAnimation(false);
-            setSelectedAchievement(unlockedAchievementDetails);
-            setShowModal(true);
-            setUnlockedAchievementDetails(null);
-          }}
-        />
-      )}
 
       <AchievementModal
         isOpen={showModal}
