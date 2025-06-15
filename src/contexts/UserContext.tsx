@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export interface User {
@@ -12,6 +11,15 @@ export interface User {
   lastMoodDate?: string;
   achievements: string[];
   moods: MoodEntry[];
+  gameProgress?: {
+    tranquiliMatch?: {
+      currentLevel: number;
+      highestLevel: number;
+      totalMatches: number;
+      timePlayedToday: number;
+      lastPlayDate: string;
+    };
+  };
 }
 
 export interface MoodEntry {
@@ -33,6 +41,7 @@ interface UserContextType {
   addMood: (mood: MoodEntry) => void;
   unlockAchievement: (achievementId: string) => void;
   updateStreak: () => void;
+  updateGameProgress: (gameId: string, progress: any) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -249,6 +258,31 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const updateGameProgress = (gameId: string, progress: any) => {
+    if (!user) return;
+    
+    const updatedUser = {
+      ...user,
+      gameProgress: {
+        ...user.gameProgress,
+        [gameId]: progress
+      }
+    };
+    
+    saveUser(updatedUser);
+    
+    // Update saved users
+    const savedUsers = JSON.parse(localStorage.getItem('tranquili-users') || '[]');
+    const userIndex = savedUsers.findIndex((u: any) => u.id === user.id);
+    if (userIndex !== -1) {
+      savedUsers[userIndex] = { 
+        ...savedUsers[userIndex], 
+        gameProgress: updatedUser.gameProgress
+      };
+      localStorage.setItem('tranquili-users', JSON.stringify(savedUsers));
+    }
+  };
+
   const value = {
     user,
     isAuthenticated,
@@ -259,6 +293,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     addMood,
     unlockAchievement,
     updateStreak,
+    updateGameProgress,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

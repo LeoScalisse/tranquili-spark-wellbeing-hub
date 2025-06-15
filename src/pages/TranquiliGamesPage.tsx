@@ -5,6 +5,8 @@ import ColorConfusionGame from '@/components/games/ColorConfusionGame';
 import ColorConfusionIntroduction from '@/components/games/ColorConfusionIntroduction';
 import MemoryFragmentsGame from '@/components/games/MemoryFragmentsGame';
 import MemoryFragmentsIntroduction from '@/components/games/MemoryFragmentsIntroduction';
+import TranquiliMatchGame from '@/components/games/TranquiliMatchGame';
+import TranquiliMatchIntroduction from '@/components/games/TranquiliMatchIntroduction';
 import TrainingObjectives from '@/components/games/TrainingObjectives';
 import GameAudioWrapper from '@/components/GameAudioWrapper';
 import GamesHeader from '@/components/games/GamesHeader';
@@ -112,7 +114,7 @@ const TranquiliGamesPage = () => {
     );
   }
 
-  // Show game introduction
+  // Show game introductions
   if (showGameIntro === 'color-confusion') {
     return (
       <ColorConfusionIntroduction
@@ -131,7 +133,16 @@ const TranquiliGamesPage = () => {
     );
   }
 
-  // Show selected game
+  if (showGameIntro === 'tranquili-match') {
+    return (
+      <TranquiliMatchIntroduction
+        onPlay={() => handlePlayGame('tranquili-match')}
+        onBack={handleBackToGameList}
+      />
+    );
+  }
+
+  // Show selected games
   if (selectedGame === 'color-confusion') {
     return (
       <GameAudioWrapper gameType="color">
@@ -144,6 +155,14 @@ const TranquiliGamesPage = () => {
     return (
       <GameAudioWrapper gameType="memory">
         <MemoryFragmentsGame onBack={handleBackToMenu} />
+      </GameAudioWrapper>
+    );
+  }
+
+  if (selectedGame === 'tranquili-match') {
+    return (
+      <GameAudioWrapper gameType="memory">
+        <TranquiliMatchGame onBack={handleBackToMenu} />
       </GameAudioWrapper>
     );
   }
