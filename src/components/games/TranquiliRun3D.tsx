@@ -1,7 +1,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Text, Box, Sphere, Plane, useGLTF } from '@react-three/drei';
+import { OrbitControls, Text, Box, Sphere, Plane } from '@react-three/drei';
 import * as THREE from 'three';
 import { useRunnerGame } from '@/hooks/useRunnerGame';
 import { Button } from '@/components/ui/button';
