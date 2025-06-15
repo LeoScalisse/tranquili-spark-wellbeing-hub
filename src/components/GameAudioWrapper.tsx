@@ -1,9 +1,10 @@
 
 import { useEffect } from 'react';
 import { useAudio } from '@/contexts/AudioContext';
+import { GameType } from '@/types/audio';
 
 interface GameAudioWrapperProps {
-  gameType: 'color' | 'memory';
+  gameType: GameType;
   children: React.ReactNode;
 }
 
