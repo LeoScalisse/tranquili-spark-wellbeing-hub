@@ -166,6 +166,38 @@ const achievements: Achievement[] = [
     icon: <Crown className="h-6 w-6" />,
     category: 'social',
     requirement: 7
+  },
+  {
+    id: 'tranquili_first_match',
+    title: 'Primeira Combinação',
+    description: 'Complete sua primeira fase no TranquiliMatch+',
+    icon: <Heart className="h-6 w-6" />,
+    category: 'games',
+    requirement: 1
+  },
+  {
+    id: 'tranquili_zen_master',
+    title: 'Mestre Zen',
+    description: 'Complete sua primeira Fase Zen no TranquiliMatch+',
+    icon: <Crown className="h-6 w-6" />,
+    category: 'games',
+    requirement: 1
+  },
+  {
+    id: 'tranquili_marathonist',
+    title: 'Maratonista Tranquilo',
+    description: 'Complete 25 fases no TranquiliMatch+',
+    icon: <Flame className="h-6 w-6" />,
+    category: 'games',
+    requirement: 25
+  },
+  {
+    id: 'tranquili_collector',
+    title: 'Colecionador de Calma',
+    description: 'Colete 500 peças no TranquiliMatch+',
+    icon: <Gift className="h-6 w-6" />,
+    category: 'games',
+    requirement: 500
   }
 ];
 
@@ -220,6 +252,29 @@ const AchievementsPage = () => {
         if (achievement.id === 'games_enthusiast') {
           const playedGames = JSON.parse(localStorage.getItem('played_games') || '[]');
           return playedGames.length;
+        }
+        if (achievement.id === 'tranquili_first_match') {
+          const progress = localStorage.getItem(`tranquili-match-progress-${user.id}`);
+          return progress ? 1 : 0;
+        }
+        if (achievement.id === 'tranquili_zen_master') {
+          return parseInt(localStorage.getItem(`tranquili-zen-completed-${user.id}`) || '0');
+        }
+        if (achievement.id === 'tranquili_marathonist') {
+          const progress = localStorage.getItem(`tranquili-match-progress-${user.id}`);
+          if (progress) {
+            const data = JSON.parse(progress);
+            return data.level || 0;
+          }
+          return 0;
+        }
+        if (achievement.id === 'tranquili_collector') {
+          const progress = localStorage.getItem(`tranquili-match-progress-${user.id}`);
+          if (progress) {
+            const data = JSON.parse(progress);
+            return data.totalCollected || 0;
+          }
+          return 0;
         }
         return 0;
       case 'social':

@@ -5,6 +5,8 @@ import ColorConfusionGame from '@/components/games/ColorConfusionGame';
 import ColorConfusionIntroduction from '@/components/games/ColorConfusionIntroduction';
 import MemoryFragmentsGame from '@/components/games/MemoryFragmentsGame';
 import MemoryFragmentsIntroduction from '@/components/games/MemoryFragmentsIntroduction';
+import TranquiliMatchGame from '@/components/games/TranquiliMatchGame';
+import TranquiliMatchIntroduction from '@/components/games/TranquiliMatchIntroduction';
 import TrainingObjectives from '@/components/games/TrainingObjectives';
 import GameAudioWrapper from '@/components/GameAudioWrapper';
 import GamesHeader from '@/components/games/GamesHeader';
@@ -70,6 +72,16 @@ const TranquiliGamesPage = () => {
   const handleGameSelect = (gameId: string) => {
     playGameSound('click');
     setShowGameIntro(gameId);
+    
+    // Registrar que o usuário jogou
+    localStorage.setItem('has_played_games', 'true');
+    
+    // Registrar jogo específico jogado
+    const playedGames = JSON.parse(localStorage.getItem('played_games') || '[]');
+    if (!playedGames.includes(gameId)) {
+      playedGames.push(gameId);
+      localStorage.setItem('played_games', JSON.stringify(playedGames));
+    }
   };
 
   const handlePlayGame = (gameId: string) => {
@@ -131,6 +143,15 @@ const TranquiliGamesPage = () => {
     );
   }
 
+  if (showGameIntro === 'tranquili-match') {
+    return (
+      <TranquiliMatchIntroduction
+        onPlay={() => handlePlayGame('tranquili-match')}
+        onBack={handleBackToGameList}
+      />
+    );
+  }
+
   // Show selected game
   if (selectedGame === 'color-confusion') {
     return (
@@ -144,6 +165,14 @@ const TranquiliGamesPage = () => {
     return (
       <GameAudioWrapper gameType="memory">
         <MemoryFragmentsGame onBack={handleBackToMenu} />
+      </GameAudioWrapper>
+    );
+  }
+
+  if (selectedGame === 'tranquili-match') {
+    return (
+      <GameAudioWrapper gameType="memory">
+        <TranquiliMatchGame onBack={handleBackToMenu} />
       </GameAudioWrapper>
     );
   }

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export interface User {
@@ -209,6 +208,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       };
       localStorage.setItem('tranquili-users', JSON.stringify(savedUsers));
     }
+
+    // Adicionar XP por conquista desbloqueada
+    addXP(25);
   };
 
   const updateStreak = () => {
