@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useAudio } from '@/contexts/AudioContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -89,6 +90,7 @@ const achievements: Achievement[] = [
 
 const AchievementsPage = () => {
   const { user, unlockAchievement } = useUser();
+  const { usedThemes } = useTheme();
   const { playAchievementSound } = useAudio();
   const { showAchievementAnimation } = useAchievementAnimation();
   const navigate = useNavigate();
@@ -107,11 +109,9 @@ const AchievementsPage = () => {
       case 'streak':
         return user.streak;
       case 'interaction':
-        // This would track chat interactions - for now, we'll assume they've chatted if they visited the page
         return localStorage.getItem('has_chatted') ? 1 : 0;
       case 'exploration':
-        // This would track theme changes - for now, we'll check if they've changed themes
-        return localStorage.getItem('themes_used') ? parseInt(localStorage.getItem('themes_used') || '1') : 1;
+        return usedThemes.length;
       default:
         return 0;
     }
@@ -138,7 +138,7 @@ const AchievementsPage = () => {
   useEffect(() => {
     checkAndUnlockAchievements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, usedThemes.length]);
 
   const getCategoryColor = (category: string) => {
     switch (category) {

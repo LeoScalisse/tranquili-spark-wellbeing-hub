@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -81,7 +80,7 @@ const achievements = [
 
 const HomePage = () => {
   const { user, unlockAchievement } = useUser();
-  const { theme } = useTheme();
+  const { theme, usedThemes } = useTheme();
   const { showAchievementAnimation } = useAchievementAnimation();
 
   const getProgress = (achievement: typeof achievements[0]): number => {
@@ -98,7 +97,8 @@ const HomePage = () => {
       case 'interaction':
         return localStorage.getItem('has_chatted') ? 1 : 0;
       case 'exploration':
-        return localStorage.getItem('themes_used') ? parseInt(localStorage.getItem('themes_used') || '1') : 1;
+        console.log('Verificando temas usados:', usedThemes, 'Total:', usedThemes.length);
+        return usedThemes.length;
       default:
         return 0;
     }
@@ -113,10 +113,12 @@ const HomePage = () => {
 
     const achievementToUnlock = achievements.find(achievement => {
       const progress = getProgress(achievement);
+      console.log(`Verificando conquista ${achievement.id}: progresso ${progress}/${achievement.requirement}, desbloqueada: ${isUnlocked(achievement)}`);
       return progress >= achievement.requirement && !isUnlocked(achievement);
     });
     
     if (achievementToUnlock) {
+      console.log('Desbloqueando conquista:', achievementToUnlock.title);
       unlockAchievement(achievementToUnlock.id);
       showAchievementAnimation(achievementToUnlock);
     }
@@ -125,7 +127,7 @@ const HomePage = () => {
   useEffect(() => {
     checkAndUnlockAchievements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.moods.length, user?.streak, user?.level]);
+  }, [user?.moods.length, user?.streak, user?.level, usedThemes.length]);
 
   return (
     <div className="min-h-screen p-4 md:p-6 lg:p-8">
