@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Trophy, Lock, Calendar, Star, Target, Zap } from 'lucide-react';
 import AchievementModal from '@/components/AchievementModal';
+import AchievementUnlockAnimation from '@/components/AchievementUnlockAnimation';
 
 interface Achievement {
   id: string;
@@ -91,6 +92,8 @@ const AchievementsPage = () => {
   const navigate = useNavigate();
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showUnlockAnimation, setShowUnlockAnimation] = useState(false);
+  const [unlockedAchievementDetails, setUnlockedAchievementDetails] = useState<Achievement | null>(null);
 
   const getProgress = (achievement: Achievement): number => {
     if (!user) return 0;
@@ -121,22 +124,22 @@ const AchievementsPage = () => {
   const checkAndUnlockAchievements = () => {
     if (!user) return;
 
-    achievements.forEach(achievement => {
+    const achievementToUnlock = achievements.find(achievement => {
       const progress = getProgress(achievement);
-      const shouldUnlock = progress >= achievement.requirement && !isUnlocked(achievement);
-      
-      if (shouldUnlock) {
-        unlockAchievement(achievement.id);
-        playAchievementSound();
-        // Show achievement unlock animation
-        setSelectedAchievement(achievement);
-        setShowModal(true);
-      }
+      return progress >= achievement.requirement && !isUnlocked(achievement);
     });
+    
+    if (achievementToUnlock) {
+      unlockAchievement(achievementToUnlock.id);
+      playAchievementSound();
+      setUnlockedAchievementDetails(achievementToUnlock);
+      setShowUnlockAnimation(true);
+    }
   };
 
   useEffect(() => {
     checkAndUnlockAchievements();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const getCategoryColor = (category: string) => {
@@ -288,6 +291,18 @@ const AchievementsPage = () => {
           </CardContent>
         </Card>
       </div>
+
+      {showUnlockAnimation && (
+        <AchievementUnlockAnimation
+          achievement={unlockedAchievementDetails}
+          onAnimationEnd={() => {
+            setShowUnlockAnimation(false);
+            setSelectedAchievement(unlockedAchievementDetails);
+            setShowModal(true);
+            setUnlockedAchievementDetails(null);
+          }}
+        />
+      )}
 
       <AchievementModal
         isOpen={showModal}
