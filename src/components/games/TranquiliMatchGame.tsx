@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,6 +20,8 @@ interface Piece {
   isSelected: boolean;
   isMatched: boolean;
   isSpecial: boolean;
+  isMoving: boolean;
+  isNewPiece: boolean;
 }
 
 interface GameState {
@@ -39,8 +40,8 @@ const BOARD_SIZE = 7;
 const PIECE_TYPES: PieceType[] = ['bubble', 'leaf', 'drop', 'moon'];
 
 const TranquiliMatchGame: React.FC<TranquiliMatchGameProps> = ({ onBack }) => {
-  const { playGameSound, playCardSound } = useAudio();
-  const { user, addXP } = useUser();
+  const { playGameSound, playCardSound, playMoodSound, startGameAmbient, stopGameAmbient } = useAudio();
+  const { user, addXP, updateGameProgress } = useUser();
   
   const [board, setBoard] = useState<Piece[][]>([]);
   const [selectedPiece, setSelectedPiece] = useState<{row: number, col: number} | null>(null);
@@ -56,6 +57,15 @@ const TranquiliMatchGame: React.FC<TranquiliMatchGameProps> = ({ onBack }) => {
     isZenMode: false
   });
 
+  // Inicializar som ambiente
+  useEffect(() => {
+    startGameAmbient('memory');
+    
+    return () => {
+      stopGameAmbient();
+    };
+  }, [startGameAmbient, stopGameAmbient]);
+
   // Inicializar tabuleiro
   const initializeBoard = useCallback(() => {
     const newBoard: Piece[][] = [];
@@ -69,11 +79,22 @@ const TranquiliMatchGame: React.FC<TranquiliMatchGameProps> = ({ onBack }) => {
           col,
           isSelected: false,
           isMatched: false,
-          isSpecial: false
+          isSpecial: false,
+          isMoving: false,
+          isNewPiece: true
         };
       }
     }
     setBoard(newBoard);
+
+    // Remover flag de nova peça após animação
+    setTimeout(() => {
+      setBoard(prevBoard => 
+        prevBoard.map(row => 
+          row.map(piece => ({ ...piece, isNewPiece: false }))
+        )
+      );
+    }, 800);
   }, []);
 
   // Verificar matches
@@ -131,21 +152,111 @@ const TranquiliMatchGame: React.FC<TranquiliMatchGameProps> = ({ onBack }) => {
     return matches;
   }, []);
 
-  // Trocar peças
+  // Trocar peças com animação
   const swapPieces = useCallback((row1: number, col1: number, row2: number, col2: number) => {
+    // Som suave de movimento
+    playMoodSound('calm');
+    
+    // Marcar peças como em movimento
     setBoard(prevBoard => {
       const newBoard = prevBoard.map(row => [...row]);
-      const temp = newBoard[row1][col1].type;
-      newBoard[row1][col1].type = newBoard[row2][col2].type;
-      newBoard[row2][col2].type = temp;
+      newBoard[row1][col1].isMoving = true;
+      newBoard[row2][col2].isMoving = true;
       return newBoard;
     });
-  }, []);
+
+    // Aguardar animação e depois trocar
+    setTimeout(() => {
+      setBoard(prevBoard => {
+        const newBoard = prevBoard.map(row => [...row]);
+        const temp = newBoard[row1][col1].type;
+        newBoard[row1][col1].type = newBoard[row2][col2].type;
+        newBoard[row2][col2].type = temp;
+        
+        // Remover flag de movimento
+        newBoard[row1][col1].isMoving = false;
+        newBoard[row2][col2].isMoving = false;
+        
+        return newBoard;
+      });
+    }, 300);
+  }, [playMoodSound]);
+
+  // Fazer peças caírem com animação
+  const dropPieces = useCallback(() => {
+    setBoard(prevBoard => {
+      const newBoard = prevBoard.map(row => [...row]);
+      
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        let emptySpaces = 0;
+        
+        // Contar espaços vazios de baixo para cima
+        for (let row = BOARD_SIZE - 1; row >= 0; row--) {
+          if (newBoard[row][col].isMatched) {
+            emptySpaces++;
+          } else if (emptySpaces > 0) {
+            // Mover peça para baixo
+            const newRow = row + emptySpaces;
+            newBoard[newRow][col] = { 
+              ...newBoard[row][col], 
+              row: newRow,
+              isMoving: true 
+            };
+            newBoard[row][col] = {
+              id: `empty-${row}-${col}`,
+              type: 'bubble',
+              row,
+              col,
+              isSelected: false,
+              isMatched: true,
+              isSpecial: false,
+              isMoving: false,
+              isNewPiece: false
+            };
+          }
+        }
+        
+        // Preencher espaços vazios no topo
+        for (let row = 0; row < emptySpaces; row++) {
+          newBoard[row][col] = {
+            id: `new-${row}-${col}-${Date.now()}`,
+            type: PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)],
+            row,
+            col,
+            isSelected: false,
+            isMatched: false,
+            isSpecial: false,
+            isMoving: false,
+            isNewPiece: true
+          };
+        }
+      }
+      
+      return newBoard;
+    });
+
+    // Som de peças caindo
+    playCardSound('flip');
+    
+    // Remover flags de movimento e nova peça após animação
+    setTimeout(() => {
+      setBoard(prevBoard => 
+        prevBoard.map(row => 
+          row.map(piece => ({ 
+            ...piece, 
+            isMoving: false, 
+            isNewPiece: false 
+          }))
+        )
+      );
+    }, 600);
+  }, [playCardSound]);
 
   // Lidar com clique na peça
   const handlePieceClick = useCallback((row: number, col: number) => {
     if (gameState.isPaused || gameState.isCompleted) return;
 
+    // Som de toque suave
     playCardSound('flip');
 
     if (!selectedPiece) {
@@ -181,7 +292,7 @@ const TranquiliMatchGame: React.FC<TranquiliMatchGameProps> = ({ onBack }) => {
               collected: prev.collected + targetMatches.length
             }));
 
-            // Remover matches
+            // Marcar matches para remoção com animação
             setBoard(prevBoard => {
               const newBoard = prevBoard.map(row => [...row]);
               matches.forEach(match => {
@@ -189,6 +300,11 @@ const TranquiliMatchGame: React.FC<TranquiliMatchGameProps> = ({ onBack }) => {
               });
               return newBoard;
             });
+
+            // Fazer peças caírem após um delay
+            setTimeout(() => {
+              dropPieces();
+            }, 400);
 
             // Adicionar XP
             addXP(matches.length * 5);
@@ -200,13 +316,13 @@ const TranquiliMatchGame: React.FC<TranquiliMatchGameProps> = ({ onBack }) => {
           }
           
           setGameState(prev => ({ ...prev, moves: prev.moves + 1 }));
-        }, 100);
+        }, 350);
       }
 
       setSelectedPiece(null);
       setBoard(prevBoard => prevBoard.map(r => r.map(c => ({...c, isSelected: false}))));
     }
-  }, [selectedPiece, gameState.isPaused, gameState.isCompleted, gameState.targetType, board, playCardSound, playGameSound, swapPieces, findMatches, addXP]);
+  }, [selectedPiece, gameState.isPaused, gameState.isCompleted, gameState.targetType, board, playCardSound, playGameSound, swapPieces, findMatches, addXP, dropPieces]);
 
   // Verificar vitória
   useEffect(() => {
@@ -214,6 +330,17 @@ const TranquiliMatchGame: React.FC<TranquiliMatchGameProps> = ({ onBack }) => {
       setGameState(prev => ({ ...prev, isCompleted: true }));
       playGameSound('victory');
       addXP(100);
+      
+      // Salvar progresso
+      if (user) {
+        updateGameProgress('tranquiliMatch', {
+          currentLevel: gameState.level,
+          highestLevel: Math.max(gameState.level, user.gameProgress?.tranquiliMatch?.highestLevel || 0),
+          totalMatches: (user.gameProgress?.tranquiliMatch?.totalMatches || 0) + gameState.collected,
+          timePlayedToday: (user.gameProgress?.tranquiliMatch?.timePlayedToday || 0) + 1,
+          lastPlayDate: new Date().toISOString().split('T')[0]
+        });
+      }
       
       // Próximo nível após 2 segundos
       setTimeout(() => {
@@ -235,7 +362,7 @@ const TranquiliMatchGame: React.FC<TranquiliMatchGameProps> = ({ onBack }) => {
         initializeBoard();
       }, 2000);
     }
-  }, [gameState.collected, gameState.goal, gameState.isCompleted, gameState.level, playGameSound, addXP, initializeBoard]);
+  }, [gameState.collected, gameState.goal, gameState.isCompleted, gameState.level, playGameSound, addXP, initializeBoard, user, updateGameProgress]);
 
   // Inicializar jogo
   useEffect(() => {
@@ -371,12 +498,18 @@ const TranquiliMatchGame: React.FC<TranquiliMatchGameProps> = ({ onBack }) => {
                     key={piece.id}
                     className={`
                       aspect-square flex items-center justify-center rounded-lg cursor-pointer
-                      transition-all duration-200 hover:scale-105
-                      ${piece.isSelected ? 'ring-2 ring-accent scale-110' : ''}
-                      ${piece.isMatched ? 'opacity-30 scale-75' : ''}
-                      bg-white/40 backdrop-blur-sm
+                      transition-all duration-300 ease-out
+                      ${piece.isSelected ? 'ring-2 ring-accent scale-110 animate-pulse' : ''}
+                      ${piece.isMatched ? 'opacity-0 scale-0' : 'opacity-100 scale-100'}
+                      ${piece.isMoving ? 'animate-[spin_0.5s_ease-in-out]' : ''}
+                      ${piece.isNewPiece ? 'animate-[fade-in_0.8s_ease-out]' : ''}
+                      bg-white/40 backdrop-blur-sm hover:scale-105 hover:bg-white/60
+                      transform-gpu will-change-transform
                     `}
                     onClick={() => handlePieceClick(rowIndex, colIndex)}
+                    style={{
+                      animationDelay: piece.isNewPiece ? `${(rowIndex + colIndex) * 0.1}s` : '0s'
+                    }}
                   >
                     {getPieceIcon(piece.type)}
                   </div>
@@ -390,7 +523,7 @@ const TranquiliMatchGame: React.FC<TranquiliMatchGameProps> = ({ onBack }) => {
         {gameState.isCompleted && (
           <Card className="glassmorphism bg-gradient-to-r from-green-100 to-blue-100 animate-fade-in">
             <CardContent className="p-6 text-center space-y-4">
-              <div className="text-6xl">✨</div>
+              <div className="text-6xl animate-bounce">✨</div>
               <h3 className="text-xl font-medium text-green-700">
                 {gameState.isZenMode ? 'Momento Zen Concluído!' : 'Nível Completo!'}
               </h3>
@@ -401,7 +534,7 @@ const TranquiliMatchGame: React.FC<TranquiliMatchGameProps> = ({ onBack }) => {
                 }
               </p>
               <div className="flex justify-center gap-2">
-                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                <Badge variant="secondary" className="bg-green-100 text-green-700 animate-scale-in">
                   <Heart className="h-3 w-3 mr-1" />
                   +100 XP
                 </Badge>
@@ -414,7 +547,7 @@ const TranquiliMatchGame: React.FC<TranquiliMatchGameProps> = ({ onBack }) => {
         {gameState.isPaused && (
           <Card className="glassmorphism bg-gradient-to-r from-blue-100 to-purple-100">
             <CardContent className="p-6 text-center space-y-4">
-              <div className="text-4xl">⏸️</div>
+              <div className="text-4xl animate-pulse">⏸️</div>
               <h3 className="text-lg font-medium">Jogo Pausado</h3>
               <p className="text-sm text-muted-foreground">
                 Respire fundo e volte quando estiver pronto
