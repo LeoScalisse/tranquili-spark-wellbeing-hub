@@ -2,7 +2,7 @@
 export type MoodType = 'happy' | 'sad' | 'calm' | 'anxious' | 'angry' | 'thoughtful';
 export type GameSoundType = 'correct' | 'incorrect' | 'click' | 'victory';
 export type CardSoundType = 'flip' | 'match' | 'mismatch';
-export type GameType = 'color' | 'memory' | 'runner';
+export type GameType = 'color' | 'memory';
 
 export interface AudioContextType {
   // Controles globais
@@ -39,9 +39,4 @@ export interface AudioContextType {
   playClickSound: () => void;
   playSuccessSound: () => void;
   playTransitionSound: () => void;
-  
-  // Sons específicos do runner
-  playRunnerCollectSound: () => void;
-  playRunnerObstacleSound: () => void;
-  playRunnerPowerUpSound: () => void;
 }

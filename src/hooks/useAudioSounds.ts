@@ -1,3 +1,4 @@
+
 import { useCallback, useRef } from 'react';
 import * as Tone from 'tone';
 import { MoodType, GameSoundType, CardSoundType, GameType } from '@/types/audio';
@@ -247,42 +248,6 @@ export const useAudioSounds = (
     }, 1600);
   }, [isSoundOn, startToneIfNeeded, synths]);
 
-  // Sons específicos do runner game - ultra suaves e relaxantes
-  const playRunnerCollectSound = useCallback(async () => {
-    if (!isSoundOn || !synths?.synth) return;
-    
-    await startToneIfNeeded();
-    
-    // Som cristalino suave para coleta
-    synths.synth.triggerAttackRelease('C6', '0.8');
-    setTimeout(() => {
-      if (synths.synth) synths.synth.triggerAttackRelease('E6', '0.6');
-    }, 200);
-  }, [isSoundOn, startToneIfNeeded, synths]);
-
-  const playRunnerObstacleSound = useCallback(async () => {
-    if (!isSoundOn || !synths?.noiseSynth) return;
-    
-    await startToneIfNeeded();
-    
-    // Som de "baque de almofada" - muito suave
-    synths.noiseSynth.triggerAttackRelease('0.15');
-  }, [isSoundOn, startToneIfNeeded, synths]);
-
-  const playRunnerPowerUpSound = useCallback(async () => {
-    if (!isSoundOn || !synths?.polySynth) return;
-    
-    await startToneIfNeeded();
-    
-    // Acorde zen ascendente
-    synths.polySynth.triggerAttackRelease(['C4', 'E4', 'G4'], '1.5');
-    setTimeout(() => {
-      if (synths.polySynth) {
-        synths.polySynth.triggerAttackRelease(['E4', 'G4', 'B4'], '1.2');
-      }
-    }, 600);
-  }, [isSoundOn, startToneIfNeeded, synths]);
-
   return {
     playMoodSound,
     playMoodConfirmation,
@@ -296,9 +261,6 @@ export const useAudioSounds = (
     stopGameAmbient,
     playClickSound,
     playSuccessSound,
-    playTransitionSound,
-    playRunnerCollectSound,
-    playRunnerObstacleSound,
-    playRunnerPowerUpSound
+    playTransitionSound
   };
 };

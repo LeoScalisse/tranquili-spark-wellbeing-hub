@@ -3,10 +3,9 @@ import { useAudio } from '@/contexts/AudioContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Gamepad2, Brain, Puzzle, Clock, Trophy, Zap } from 'lucide-react';
+import { ArrowLeft, Gamepad2, Brain, Puzzle, Clock, Trophy } from 'lucide-react';
 import ColorConfusionGame from '@/components/games/ColorConfusionGame';
 import MemoryFragmentsGame from '@/components/games/MemoryFragmentsGame';
-import TranquiliRun3D from '@/components/games/TranquiliRun3D';
 import GameAudioWrapper from '@/components/GameAudioWrapper';
 import { useState } from 'react';
 
@@ -21,15 +20,6 @@ interface Game {
 }
 
 const games: Game[] = [
-  {
-    id: 'tranquili-run',
-    title: 'Tranquili Run+ 3D',
-    description: 'Runner infinito 3D relaxante com Tranquilinho. Corra por paisagens zen tridimensionais coletando calma e evitando estresse.',
-    icon: <Zap className="h-8 w-8" />,
-    difficulty: 'Fácil',
-    estimatedTime: '5-15 min',
-    benefits: ['Reflexos', 'Concentração', 'Relaxamento', 'Imersão 3D']
-  },
   {
     id: 'color-confusion',
     title: 'Cor ou Confusão?',
@@ -73,14 +63,6 @@ const TranquiliGamesPage = () => {
       default: return 'bg-gray-500';
     }
   };
-
-  if (selectedGame === 'tranquili-run') {
-    return (
-      <GameAudioWrapper gameType="runner">
-        <TranquiliRun3D onBack={handleBackToMenu} />
-      </GameAudioWrapper>
-    );
-  }
 
   if (selectedGame === 'color-confusion') {
     return (
@@ -127,7 +109,7 @@ const TranquiliGamesPage = () => {
           </CardHeader>
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {games.map((game) => (
             <Card 
               key={game.id}
