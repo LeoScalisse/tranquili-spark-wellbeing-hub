@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useAudio } from './AudioContext';
 
-export interface Achievement {
+interface Achievement {
   id: string;
   title: string;
   description: string;
