@@ -1,299 +1,619 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Text, Box, Sphere, Plane } from '@react-three/drei';
+import { Text, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useRunnerGame } from '@/hooks/useRunnerGame';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Play, Pause, Square } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Square, Volume2, Leaf } from 'lucide-react';
 
 interface TranquiliRun3DProps {
   onBack: () => void;
 }
 
-// Componente do personagem Tranquilinho em 3D
+// Personagem Tranquilinho estilo Pixar/Kidcore
 const Tranquilinho = ({ position, isJumping, isInZenMode, hasShield }: any) => {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<THREE.Group>(null);
+  const breathingRef = useRef<THREE.Mesh>(null);
   
   useFrame((state) => {
     if (meshRef.current) {
-      // Animação de corrida suave
-      meshRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 8) * 0.1;
+      // Animação de corrida suave com bounce natural
+      const time = state.clock.elapsedTime;
+      meshRef.current.rotation.z = Math.sin(time * 6) * 0.05;
+      meshRef.current.position.y = position[1] + Math.sin(time * 8) * 0.02;
       
-      // Animação de respiração zen
-      if (isInZenMode) {
-        meshRef.current.scale.setScalar(1 + Math.sin(state.clock.elapsedTime * 2) * 0.05);
+      // Respiração visível zen
+      if (breathingRef.current && isInZenMode) {
+        breathingRef.current.scale.setScalar(1 + Math.sin(time * 1.5) * 0.08);
       }
     }
   });
 
   return (
-    <group position={position}>
-      {/* Corpo do Tranquilinho */}
-      <mesh ref={meshRef} position={[0, 0.5, 0]}>
-        <boxGeometry args={[0.6, 1.2, 0.4]} />
+    <group ref={meshRef} position={position}>
+      {/* Corpo principal - proporções kidcore */}
+      <mesh position={[0, 0.3, 0]}>
+        <cylinderGeometry args={[0.4, 0.5, 0.8, 8]} />
         <meshStandardMaterial color="#38B6FF" />
       </mesh>
       
-      {/* Cabeça */}
-      <mesh position={[0, 1.4, 0]}>
-        <sphereGeometry args={[0.4]} />
+      {/* Cabeça maior estilo Pixar */}
+      <mesh ref={breathingRef} position={[0, 1.1, 0]}>
+        <sphereGeometry args={[0.5, 16, 16]} />
         <meshStandardMaterial color="#D2B48C" />
       </mesh>
       
-      {/* Cabelo cacheado */}
-      <mesh position={[0, 1.8, 0]}>
-        <sphereGeometry args={[0.35]} />
-        <meshStandardMaterial color="#4A4A4A" />
+      {/* Cabelos cacheados volumosos */}
+      <mesh position={[0, 1.5, 0]}>
+        <sphereGeometry args={[0.45, 8, 8]} />
+        <meshStandardMaterial color="#2C1810" />
       </mesh>
       
-      {/* Braços */}
-      <mesh position={[-0.5, 0.8, 0]} rotation={[0, 0, Math.PI * 0.1]}>
-        <boxGeometry args={[0.2, 0.8, 0.2]} />
+      {/* Detalhes dos cabelos - cachos individuais */}
+      {Array.from({ length: 8 }).map((_, i) => (
+        <mesh
+          key={i}
+          position={[
+            Math.cos((i * Math.PI * 2) / 8) * 0.3,
+            1.4 + Math.sin((i * Math.PI * 2) / 8) * 0.1,
+            Math.sin((i * Math.PI * 2) / 8) * 0.3
+          ]}
+        >
+          <sphereGeometry args={[0.15, 6, 6]} />
+          <meshStandardMaterial color="#3D2317" />
+        </mesh>
+      ))}
+      
+      {/* Braços arredondados */}
+      <mesh position={[-0.6, 0.5, 0]} rotation={[0, 0, Math.PI * 0.2]}>
+        <capsuleGeometry args={[0.15, 0.6]} />
         <meshStandardMaterial color="#38B6FF" />
       </mesh>
-      <mesh position={[0.5, 0.8, 0]} rotation={[0, 0, -Math.PI * 0.1]}>
-        <boxGeometry args={[0.2, 0.8, 0.2]} />
+      <mesh position={[0.6, 0.5, 0]} rotation={[0, 0, -Math.PI * 0.2]}>
+        <capsuleGeometry args={[0.15, 0.6]} />
         <meshStandardMaterial color="#38B6FF" />
       </mesh>
       
-      {/* Pernas */}
-      <mesh position={[-0.2, -0.4, 0]}>
-        <boxGeometry args={[0.25, 0.8, 0.25]} />
+      {/* Pernas - calça azul */}
+      <mesh position={[-0.2, -0.3, 0]}>
+        <capsuleGeometry args={[0.18, 0.7]} />
+        <meshStandardMaterial color="#1E40AF" />
+      </mesh>
+      <mesh position={[0.2, -0.3, 0]}>
+        <capsuleGeometry args={[0.18, 0.7]} />
+        <meshStandardMaterial color="#1E40AF" />
+      </mesh>
+      
+      {/* Tênis brancos com detalhes amarelos */}
+      <mesh position={[-0.2, -0.8, 0.1]}>
+        <boxGeometry args={[0.3, 0.2, 0.4]} />
+        <meshStandardMaterial color="#FFFFFF" />
+      </mesh>
+      <mesh position={[0.2, -0.8, 0.1]}>
+        <boxGeometry args={[0.3, 0.2, 0.4]} />
+        <meshStandardMaterial color="#FFFFFF" />
+      </mesh>
+      
+      {/* Detalhes amarelos dos tênis */}
+      <mesh position={[-0.2, -0.75, 0.2]}>
+        <boxGeometry args={[0.15, 0.05, 0.1]} />
         <meshStandardMaterial color="#FFDE59" />
       </mesh>
-      <mesh position={[0.2, -0.4, 0]}>
-        <boxGeometry args={[0.25, 0.8, 0.25]} />
+      <mesh position={[0.2, -0.75, 0.2]}>
+        <boxGeometry args={[0.15, 0.05, 0.1]} />
         <meshStandardMaterial color="#FFDE59" />
       </mesh>
       
-      {/* Escudo zen */}
+      {/* Escudo zen translúcido */}
       {hasShield && (
         <mesh position={[0, 0.5, 0]}>
-          <sphereGeometry args={[1.2]} />
+          <sphereGeometry args={[1.4, 16, 16]} />
           <meshStandardMaterial 
-            color="gold" 
+            color="#FFDE59" 
             transparent 
-            opacity={0.3}
-            emissive="gold"
+            opacity={0.2}
+            emissive="#FFDE59"
+            emissiveIntensity={0.3}
+          />
+        </mesh>
+      )}
+      
+      {/* Aura zen roxa */}
+      {isInZenMode && (
+        <mesh position={[0, 0.5, 0]}>
+          <sphereGeometry args={[1.8, 12, 12]} />
+          <meshStandardMaterial 
+            color="#B9B5F6" 
+            transparent 
+            opacity={0.15}
+            emissive="#B9B5F6"
             emissiveIntensity={0.2}
           />
         </mesh>
       )}
       
-      {/* Aura zen */}
-      {isInZenMode && (
-        <mesh position={[0, 0.5, 0]}>
-          <sphereGeometry args={[1.5]} />
-          <meshStandardMaterial 
-            color="purple" 
-            transparent 
-            opacity={0.1}
-            emissive="purple"
-            emissiveIntensity={0.1}
-          />
-        </mesh>
-      )}
+      {/* Rastro azul suave */}
+      <mesh position={[0, 0, -0.5]}>
+        <planeGeometry args={[0.8, 3]} />
+        <meshStandardMaterial 
+          color="#38B6FF"
+          transparent
+          opacity={0.3}
+          emissive="#38B6FF"
+          emissiveIntensity={0.1}
+        />
+      </mesh>
     </group>
   );
 };
 
-// Componente do cenário 3D
-const GameEnvironment = ({ scenery }: { scenery: string }) => {
-  const groundRef = useRef<THREE.Mesh>(null);
+// Plataformas flutuantes orgânicas
+const FloatingPlatform = ({ position, type = 'stone' }: any) => {
+  const meshRef = useRef<THREE.Mesh>(null);
   
-  useFrame(() => {
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime + position[0]) * 0.1;
+      meshRef.current.rotation.y += 0.002;
+    }
+  });
+
+  const getGeometry = () => {
+    switch (type) {
+      case 'leaf':
+        return <sphereGeometry args={[1.2, 8, 6]} />;
+      case 'cushion':
+        return <cylinderGeometry args={[1, 1, 0.3, 8]} />;
+      default:
+        return <sphereGeometry args={[1, 12, 8]} />;
+    }
+  };
+
+  const getColor = () => {
+    switch (type) {
+      case 'leaf':
+        return '#A8D5BA';
+      case 'cushion':
+        return '#FFD6E8';
+      default:
+        return '#E5E7EB';
+    }
+  };
+
+  return (
+    <mesh ref={meshRef} position={position}>
+      {getGeometry()}
+      <meshStandardMaterial 
+        color={getColor()} 
+        roughness={0.3}
+        metalness={0.1}
+      />
+    </mesh>
+  );
+};
+
+// Coletáveis estilizados 3D
+const StylizedCollectible = ({ collectible }: any) => {
+  const meshRef = useRef<THREE.Group>(null);
+  const particlesRef = useRef<THREE.Points>(null);
+  
+  useFrame((state) => {
+    if (meshRef.current && !collectible.collected) {
+      meshRef.current.rotation.y += 0.03;
+      meshRef.current.position.y = collectible.y / 100 + Math.sin(state.clock.elapsedTime * 3) * 0.3;
+      meshRef.current.position.z += 0.1;
+      
+      // Animação das partículas
+      if (particlesRef.current) {
+        particlesRef.current.rotation.y += 0.01;
+      }
+    }
+  });
+
+  if (collectible.collected) return null;
+
+  const renderCollectible = () => {
+    switch (collectible.type) {
+      case 'calm':
+        return (
+          <group>
+            {/* Bolha translúcida */}
+            <mesh>
+              <sphereGeometry args={[0.4, 16, 16]} />
+              <meshStandardMaterial 
+                color="#38B6FF"
+                transparent
+                opacity={0.6}
+                emissive="#38B6FF"
+                emissiveIntensity={0.3}
+              />
+            </mesh>
+            {/* Partículas internas */}
+            <points ref={particlesRef}>
+              <bufferGeometry>
+                <bufferAttribute
+                  array={new Float32Array(Array.from({ length: 30 }, () => 
+                    [Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5]).flat())}
+                  count={10}
+                  itemSize={3}
+                />
+              </bufferGeometry>
+              <pointsMaterial color="#FFFFFF" size={0.02} />
+            </points>
+          </group>
+        );
+      
+      case 'light':
+        return (
+          <mesh>
+            <octahedronGeometry args={[0.4, 2]} />
+            <meshStandardMaterial 
+              color="#FFDE59"
+              transparent
+              opacity={0.8}
+              emissive="#FFDE59"
+              emissiveIntensity={0.5}
+            />
+          </mesh>
+        );
+      
+      case 'focus':
+        return (
+          <mesh>
+            <dodecahedronGeometry args={[0.35]} />
+            <meshStandardMaterial 
+              color="#B9B5F6"
+              metalness={0.8}
+              roughness={0.2}
+              emissive="#B9B5F6"
+              emissiveIntensity={0.4}
+            />
+          </mesh>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <group 
+      ref={meshRef} 
+      position={[(collectible.x - 200) / 50, 2, -collectible.y / 100]}
+    >
+      {renderCollectible()}
+    </group>
+  );
+};
+
+// Obstáculos suaves estilizados
+const StylizedObstacle = ({ obstacle }: any) => {
+  const meshRef = useRef<THREE.Group>(null);
+  
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.position.z += 0.1;
+      meshRef.current.rotation.y += 0.01;
+      
+      // Animação de vibração para telas de distração
+      if (obstacle.type === 'distraction') {
+        meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 10) * 0.1;
+      }
+    }
+  });
+
+  const renderObstacle = () => {
+    switch (obstacle.type) {
+      case 'stress':
+        return (
+          <mesh>
+            <sphereGeometry args={[0.8, 8, 8]} />
+            <meshStandardMaterial 
+              color="#4B5563"
+              transparent
+              opacity={0.7}
+            />
+          </mesh>
+        );
+      
+      case 'distraction':
+        return (
+          <mesh>
+            <boxGeometry args={[0.6, 0.6, 0.1]} />
+            <meshStandardMaterial 
+              color="#6B7280"
+              transparent
+              opacity={0.5}
+              emissive="#EC4899"
+              emissiveIntensity={0.2}
+            />
+          </mesh>
+        );
+      
+      default:
+        return (
+          <mesh>
+            <cylinderGeometry args={[0.5, 0.5, 1]} />
+            <meshStandardMaterial color="#6B7280" />
+          </mesh>
+        );
+    }
+  };
+
+  return (
+    <group 
+      ref={meshRef} 
+      position={[(obstacle.x - 200) / 50, 1, -obstacle.y / 100]}
+    >
+      {renderObstacle()}
+    </group>
+  );
+};
+
+// Ambiente temático dinâmico
+const ThematicEnvironment = ({ scenery }: { scenery: string }) => {
+  const groundRef = useRef<THREE.Mesh>(null);
+  const cloudsRef = useRef<THREE.Group>(null);
+  
+  useFrame((state) => {
     if (groundRef.current) {
       groundRef.current.position.z += 0.1;
       if (groundRef.current.position.z > 10) {
         groundRef.current.position.z = -50;
       }
     }
+    
+    if (cloudsRef.current) {
+      cloudsRef.current.rotation.y += 0.001;
+    }
   });
 
-  const getSceneryColor = () => {
+  const getEnvironmentColor = () => {
     switch (scenery) {
-      case 'garden': return '#90EE90';
-      case 'forest': return '#228B22';
-      case 'sky': return '#87CEEB';
-      default: return '#90EE90';
+      case 'garden': return '#A8D5BA';
+      case 'forest': return '#10B981';
+      case 'sky': return '#B9B5F6';
+      default: return '#A8D5BA';
     }
   };
 
   return (
     <>
-      {/* Chão infinito */}
-      <mesh ref={groundRef} position={[0, -1, -20]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[15, 100]} />
-        <meshStandardMaterial color={getSceneryColor()} />
+      {/* Névoa atmosférica */}
+      <fog attach="fog" args={[getEnvironmentColor(), 10, 50]} />
+      
+      {/* Chão flutuante com plataformas orgânicas */}
+      <group>
+        {Array.from({ length: 20 }).map((_, i) => (
+          <FloatingPlatform
+            key={i}
+            position={[
+              (Math.random() - 0.5) * 20,
+              -2 + Math.random() * 0.5,
+              -i * 8
+            ]}
+            type={['stone', 'leaf', 'cushion'][Math.floor(Math.random() * 3)]}
+          />
+        ))}
+      </group>
+      
+      {/* Trilhas de luz conectando plataformas */}
+      <mesh position={[0, -1.5, -20]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[20, 100]} />
+        <meshStandardMaterial 
+          color={getEnvironmentColor()}
+          transparent
+          opacity={0.3}
+          emissive={getEnvironmentColor()}
+          emissiveIntensity={0.2}
+        />
       </mesh>
       
-      {/* Pistas demarcadas */}
-      <mesh position={[-2, -0.99, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[0.1, 100]} />
-        <meshStandardMaterial color="white" transparent opacity={0.8} />
-      </mesh>
-      <mesh position={[2, -0.99, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[0.1, 100]} />
-        <meshStandardMaterial color="white" transparent opacity={0.8} />
-      </mesh>
-      
-      {/* Elementos decorativos do cenário */}
+      {/* Elementos temáticos específicos */}
       {scenery === 'garden' && (
-        <>
-          {/* Flores */}
-          {Array.from({ length: 10 }).map((_, i) => (
-            <mesh key={i} position={[Math.random() * 20 - 10, 0, -i * 10]}>
-              <sphereGeometry args={[0.3]} />
-              <meshStandardMaterial color="#FFB6C1" />
+        <group ref={cloudsRef}>
+          {/* Flores que se abrem */}
+          {Array.from({ length: 15 }).map((_, i) => (
+            <mesh key={i} position={[Math.random() * 30 - 15, 1, -i * 8]}>
+              <sphereGeometry args={[0.3, 8, 6]} />
+              <meshStandardMaterial 
+                color="#FFD6E8"
+                emissive="#FFD6E8"
+                emissiveIntensity={0.3}
+              />
             </mesh>
           ))}
-        </>
+        </group>
       )}
       
       {scenery === 'forest' && (
-        <>
-          {/* Árvores */}
-          {Array.from({ length: 8 }).map((_, i) => (
-            <group key={i} position={[8 - Math.random() * 16, 0, -i * 12]}>
-              <mesh position={[0, 1, 0]}>
-                <cylinderGeometry args={[0.3, 0.3, 2]} />
-                <meshStandardMaterial color="#8B4513" />
+        <group>
+          {/* Árvores estilizadas */}
+          {Array.from({ length: 12 }).map((_, i) => (
+            <group key={i} position={[12 - Math.random() * 24, 0, -i * 10]}>
+              <mesh position={[0, 2, 0]}>
+                <cylinderGeometry args={[0.3, 0.4, 3]} />
+                <meshStandardMaterial color="#92400E" />
               </mesh>
-              <mesh position={[0, 2.5, 0]}>
-                <sphereGeometry args={[1]} />
-                <meshStandardMaterial color="#228B22" />
+              <mesh position={[0, 4, 0]}>
+                <sphereGeometry args={[1.5, 8, 6]} />
+                <meshStandardMaterial 
+                  color="#A8D5BA"
+                  emissive="#A8D5BA"
+                  emissiveIntensity={0.2}
+                />
               </mesh>
             </group>
           ))}
-        </>
+        </group>
       )}
       
       {scenery === 'sky' && (
-        <>
-          {/* Nuvens */}
-          {Array.from({ length: 12 }).map((_, i) => (
-            <mesh key={i} position={[Math.random() * 20 - 10, 3 + Math.random() * 2, -i * 8]}>
-              <sphereGeometry args={[1 + Math.random()]} />
-              <meshStandardMaterial color="white" transparent opacity={0.8} />
+        <group ref={cloudsRef}>
+          {/* Nuvens fofas interativas */}
+          {Array.from({ length: 20 }).map((_, i) => (
+            <mesh 
+              key={i} 
+              position={[
+                Math.random() * 40 - 20, 
+                3 + Math.random() * 3, 
+                -i * 6
+              ]}
+            >
+              <sphereGeometry args={[1.5 + Math.random(), 8, 6]} />
+              <meshStandardMaterial 
+                color="#FFFFFF"
+                transparent
+                opacity={0.8}
+                emissive="#FFFFFF"
+                emissiveIntensity={0.1}
+              />
             </mesh>
           ))}
-        </>
+        </group>
       )}
+      
+      {/* Partículas de poeira brilhante no ar */}
+      <points>
+        <bufferGeometry>
+          <bufferAttribute
+            array={new Float32Array(Array.from({ length: 300 }, () => 
+              [Math.random() * 100 - 50, Math.random() * 20, Math.random() * -100]).flat())}
+            count={100}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial 
+          color="#FFFFFF" 
+          size={0.05} 
+          transparent 
+          opacity={0.6}
+        />
+      </points>
     </>
   );
 };
 
-// Componente dos coletáveis 3D
-const Collectible3D = ({ collectible }: any) => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  
-  useFrame((state) => {
-    if (meshRef.current && !collectible.collected) {
-      meshRef.current.rotation.y += 0.05;
-      meshRef.current.position.y = collectible.y / 100 + Math.sin(state.clock.elapsedTime * 3) * 0.2;
-      meshRef.current.position.z += 0.1;
-    }
-  });
-
-  if (collectible.collected) return null;
-
-  const getCollectibleColor = () => {
-    switch (collectible.type) {
-      case 'calm': return '#38B6FF';
-      case 'light': return '#FFDE59';
-      case 'focus': return '#9932CC';
-      default: return '#38B6FF';
-    }
-  };
-
-  return (
-    <mesh 
-      ref={meshRef} 
-      position={[(collectible.x - 200) / 50, 1, -collectible.y / 100]}
-    >
-      <sphereGeometry args={[0.3]} />
-      <meshStandardMaterial 
-        color={getCollectibleColor()} 
-        emissive={getCollectibleColor()}
-        emissiveIntensity={0.3}
-      />
-    </mesh>
-  );
-};
-
-// Componente dos obstáculos 3D
-const Obstacle3D = ({ obstacle }: any) => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  
-  useFrame(() => {
-    if (meshRef.current) {
-      meshRef.current.position.z += 0.1;
-    }
-  });
-
-  return (
-    <mesh 
-      ref={meshRef} 
-      position={[(obstacle.x - 200) / 50, 0.5, -obstacle.y / 100]}
-    >
-      <boxGeometry args={[0.8, 1, 0.8]} />
-      <meshStandardMaterial color="#696969" />
-    </mesh>
-  );
-};
-
-// Câmera customizada que segue o jogador
-const GameCamera = ({ playerLane }: { playerLane: number }) => {
+// Câmera cinematográfica fluida
+const CinematicCamera = ({ playerLane }: { playerLane: number }) => {
   const { camera } = useThree();
   
-  useFrame(() => {
-    // Posição da câmera atrás do jogador
+  useFrame((state) => {
     const targetX = (playerLane - 1) * 2;
-    camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.1);
-    camera.position.y = 3;
-    camera.position.z = 8;
+    const time = state.clock.elapsedTime;
     
-    // Olhar para o jogador
-    camera.lookAt(targetX, 1, 0);
+    // Movimento fluido e levemente flutuante
+    camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.05);
+    camera.position.y = 4 + Math.sin(time * 0.5) * 0.2;
+    camera.position.z = 10 + Math.sin(time * 0.3) * 0.5;
+    
+    // Olhar suavemente para o jogador
+    camera.lookAt(targetX, 2, 0);
   });
   
   return null;
 };
 
-// Componente principal da cena 3D
-const Game3DScene = ({ gameState, movePlayer }: any) => {
+// Interface flutuante moderna
+const FloatingUI = ({ gameState, onPause, onStop }: any) => {
+  return (
+    <Html position={[0, 6, 0]} center>
+      <div className="flex items-center gap-4 bg-white/20 backdrop-blur-md rounded-full px-6 py-3 border border-white/30">
+        {/* Volume */}
+        <div className="flex items-center gap-2">
+          <Volume2 className="h-5 w-5 text-white" />
+        </div>
+        
+        {/* Pontuação */}
+        <div className="flex items-center gap-2 text-white font-medium">
+          <span className="text-2xl">💙</span>
+          <span>{gameState.stats.calmBubbles}</span>
+        </div>
+        
+        <div className="flex items-center gap-2 text-white font-medium">
+          <span className="text-2xl">☀️</span>
+          <span>{gameState.stats.lightRays}</span>
+        </div>
+        
+        <div className="flex items-center gap-2 text-white font-medium">
+          <span className="text-2xl">🧠</span>
+          <span>{gameState.stats.focusSymbols}</span>
+        </div>
+        
+        {/* Modo zen */}
+        <div className="flex items-center gap-2">
+          <Leaf className={`h-5 w-5 ${gameState.player.isInZenMode ? 'text-green-400' : 'text-white/50'}`} />
+        </div>
+        
+        {/* Controles */}
+        <button 
+          onClick={onPause}
+          className="bg-white/30 hover:bg-white/40 text-white rounded-full p-2 transition-all"
+        >
+          {gameState.isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+        </button>
+        
+        <button 
+          onClick={onStop}
+          className="bg-white/30 hover:bg-white/40 text-white rounded-full p-2 transition-all"
+        >
+          <Square className="h-4 w-4" />
+        </button>
+      </div>
+    </Html>
+  );
+};
+
+// Cena principal 3D
+const StylizedGame3DScene = ({ gameState, movePlayer, onPause, onStop }: any) => {
   return (
     <>
-      {/* Iluminação */}
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[10, 10, 5]} intensity={1} />
-      <pointLight position={[0, 5, 0]} intensity={0.5} color="#FFDE59" />
+      {/* Iluminação suave difusa */}
+      <ambientLight intensity={0.8} color="#FFFFFF" />
+      <directionalLight 
+        position={[10, 15, 5]} 
+        intensity={0.6} 
+        color="#FFDE59"
+        castShadow
+      />
+      <pointLight 
+        position={[0, 8, 0]} 
+        intensity={0.4} 
+        color="#B9B5F6" 
+      />
       
-      {/* Câmera personalizada */}
-      <GameCamera playerLane={gameState.player.lane} />
+      {/* Câmera cinematográfica */}
+      <CinematicCamera playerLane={gameState.player.lane} />
       
-      {/* Cenário */}
-      <GameEnvironment scenery={gameState.stats.currentScenery} />
+      {/* Ambiente temático */}
+      <ThematicEnvironment scenery={gameState.stats.currentScenery} />
       
-      {/* Personagem */}
+      {/* Interface flutuante */}
+      <FloatingUI 
+        gameState={gameState} 
+        onPause={onPause} 
+        onStop={onStop} 
+      />
+      
+      {/* Personagem estilizado */}
       <Tranquilinho 
-        position={[(gameState.player.lane - 1) * 2, gameState.player.isJumping ? 2 : 0, 0]}
+        position={[(gameState.player.lane - 1) * 2, gameState.player.isJumping ? 3 : 1, 0]}
         isJumping={gameState.player.isJumping}
         isInZenMode={gameState.player.isInZenMode}
         hasShield={gameState.player.hasShield}
       />
       
-      {/* Coletáveis */}
+      {/* Coletáveis estilizados */}
       {gameState.collectibles.map((collectible: any) => (
-        <Collectible3D key={collectible.id} collectible={collectible} />
+        <StylizedCollectible key={collectible.id} collectible={collectible} />
       ))}
       
-      {/* Obstáculos */}
+      {/* Obstáculos suaves */}
       {gameState.obstacles.map((obstacle: any) => (
-        <Obstacle3D key={obstacle.id} obstacle={obstacle} />
+        <StylizedObstacle key={obstacle.id} obstacle={obstacle} />
       ))}
     </>
   );
@@ -334,60 +654,69 @@ const TranquiliRun3D: React.FC<TranquiliRun3DProps> = ({ onBack }) => {
 
   if (!gameState.isPlaying && gameState.stats.score === 0) {
     return (
-      <div className="min-h-screen p-4">
+      <div className="min-h-screen p-4 bg-gradient-to-br from-blue-100 via-purple-50 to-green-100">
         <div className="max-w-2xl mx-auto space-y-6">
-          <Card className="glassmorphism">
+          <Card className="glassmorphism border-white/30 bg-white/20 backdrop-blur-md">
             <CardHeader className="flex-row items-center space-y-0 pb-4">
-              <Button variant="ghost" size="icon" onClick={onBack} className="mr-4">
+              <Button variant="ghost" size="icon" onClick={onBack} className="mr-4 text-white">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div className="flex-1 text-center">
-                <CardTitle className="text-2xl text-accent">🏃‍♂️ Tranquili Run+ 3D</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Um runner infinito 3D relaxante com Tranquilinho
+                <CardTitle className="text-3xl text-white mb-2">🌈 TranquiliRun+ 3D</CardTitle>
+                <p className="text-white/80">
+                  Uma jornada 3D de serenidade e autodescoberta
                 </p>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="text-center space-y-4">
-                <div className="text-6xl animate-bounce">🧑‍🦱</div>
-                <h2 className="text-xl font-semibold">Bem-vindo à Tranquilândia 3D!</h2>
-                <p className="text-muted-foreground">
-                  Corra por paisagens 3D relaxantes, coletando bolhas de calma 
-                  e evitando o estresse em uma experiência imersiva.
+                <div className="text-8xl animate-bounce">🧒🏽</div>
+                <h2 className="text-2xl font-semibold text-white">Bem-vindo à Nova Tranquilândia!</h2>
+                <p className="text-white/80 leading-relaxed">
+                  Explore mundos 3D mágicos, colete cristais de tranquilidade 
+                  e encontre sua paz interior em uma aventura visual única.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="p-4 text-center">
-                  <div className="text-2xl mb-2">💙</div>
-                  <h3 className="font-semibold text-sm">Bolhas de Calma</h3>
-                  <p className="text-xs text-muted-foreground">+10 pontos</p>
+                <Card className="p-4 text-center bg-white/10 border-white/20">
+                  <div className="text-3xl mb-2">💙</div>
+                  <h3 className="font-semibold text-white">Bolhas de Calma</h3>
+                  <p className="text-xs text-white/70">Translúcidas e flutuantes</p>
                 </Card>
-                <Card className="p-4 text-center">
-                  <div className="text-2xl mb-2">☀️</div>
-                  <h3 className="font-semibold text-sm">Raios de Leveza</h3>
-                  <p className="text-xs text-muted-foreground">+20 pontos</p>
+                <Card className="p-4 text-center bg-white/10 border-white/20">
+                  <div className="text-3xl mb-2">✨</div>
+                  <h3 className="font-semibold text-white">Cristais de Leveza</h3>
+                  <p className="text-xs text-white/70">Geometrias luminosas</p>
                 </Card>
-                <Card className="p-4 text-center">
-                  <div className="text-2xl mb-2">🧠</div>
-                  <h3 className="font-semibold text-sm">Símbolos de Foco</h3>
-                  <p className="text-xs text-muted-foreground">+30 pontos</p>
+                <Card className="p-4 text-center bg-white/10 border-white/20">
+                  <div className="text-3xl mb-2">🧠</div>
+                  <h3 className="font-semibold text-white">Símbolos de Foco</h3>
+                  <p className="text-xs text-white/70">Ícones dourados místicos</p>
                 </Card>
               </div>
 
-              <div className="space-y-2">
-                <h3 className="font-semibold">Controles:</h3>
+              <div className="space-y-3">
+                <h3 className="font-semibold text-white">Mundos Temáticos:</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-                  <Badge variant="outline">← → ou A/D: Mover</Badge>
-                  <Badge variant="outline">↑ ou W/Espaço: Pular</Badge>
-                  <Badge variant="outline">Mouse: Rotacionar câmera</Badge>
+                  <Badge variant="secondary" className="bg-green-500/20 text-white border-green-300/30">
+                    🌿 Floresta Zen
+                  </Badge>
+                  <Badge variant="secondary" className="bg-pink-500/20 text-white border-pink-300/30">
+                    🌸 Jardim da Mente
+                  </Badge>
+                  <Badge variant="secondary" className="bg-purple-500/20 text-white border-purple-300/30">
+                    ☁️ Céu da Leveza
+                  </Badge>
                 </div>
               </div>
 
-              <Button onClick={startGame} className="w-full text-lg py-6">
+              <Button 
+                onClick={startGame} 
+                className="w-full text-lg py-6 bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 text-white border-0"
+              >
                 <Play className="mr-2 h-5 w-5" />
-                Começar Aventura 3D Zen
+                Iniciar Jornada Zen 3D
               </Button>
             </CardContent>
           </Card>
@@ -397,124 +726,98 @@ const TranquiliRun3D: React.FC<TranquiliRun3DProps> = ({ onBack }) => {
   }
 
   return (
-    <div className="min-h-screen p-4">
-      <div className="max-w-6xl mx-auto space-y-4">
-        {/* Header com estatísticas */}
-        <Card className="glassmorphism">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <Button variant="ghost" size="icon" onClick={onBack}>
-                <ArrowLeft className="h-4 w-4" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-200 via-purple-100 to-green-200">
+      {/* Canvas 3D estilizado */}
+      <div style={{ height: '100vh', width: '100%' }}>
+        <Canvas shadows camera={{ position: [0, 4, 10], fov: 60 }}>
+          <StylizedGame3DScene 
+            gameState={gameState} 
+            movePlayer={movePlayer}
+            onPause={pauseGame}
+            onStop={endGame}
+          />
+        </Canvas>
+        
+        {/* Controles móveis estilizados */}
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-6 md:hidden">
+          <Button 
+            variant="outline" 
+            size="icon"
+            onTouchStart={() => movePlayer('left')}
+            className="glassmorphism bg-white/20 border-white/30 text-white h-16 w-16 rounded-full"
+          >
+            <span className="text-2xl">←</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            size="icon"
+            onTouchStart={() => movePlayer('jump')}
+            className="glassmorphism bg-white/20 border-white/30 text-white h-16 w-16 rounded-full"
+          >
+            <span className="text-2xl">↑</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            size="icon"
+            onTouchStart={() => movePlayer('right')}
+            className="glassmorphism bg-white/20 border-white/30 text-white h-16 w-16 rounded-full"
+          >
+            <span className="text-2xl">→</span>
+          </Button>
+        </div>
+
+        {/* Pausa overlay estilizado */}
+        {gameState.isPaused && (
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center backdrop-blur-sm">
+            <Card className="glassmorphism p-8 text-center bg-white/20 border-white/30">
+              <h3 className="text-2xl font-semibold mb-4 text-white">Momento de Pausa 🧘‍♂️</h3>
+              <p className="text-white/80 mb-6">Respire profundamente e conecte-se consigo</p>
+              <Button 
+                onClick={pauseGame}
+                className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white"
+              >
+                <Play className="mr-2 h-4 w-4" />
+                Continuar Jornada
               </Button>
-              
-              <div className="flex items-center gap-4">
-                <Badge variant="outline">Pontos: {gameState.stats.score}</Badge>
-                <Badge variant="outline">💙 {gameState.stats.calmBubbles}</Badge>
-                <Badge variant="outline">☀️ {gameState.stats.lightRays}</Badge>
-                <Badge variant="outline">🧠 {gameState.stats.focusSymbols}</Badge>
-              </div>
-              
-              <div className="flex gap-2">
-                {gameState.isPlaying && (
-                  <Button variant="outline" size="icon" onClick={pauseGame}>
-                    {gameState.isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-                  </Button>
-                )}
-                <Button variant="outline" size="icon" onClick={endGame}>
-                  <Square className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Canvas 3D */}
-        <Card className="glassmorphism overflow-hidden">
-          <div style={{ height: '500px', width: '100%' }}>
-            <Canvas>
-              <Game3DScene gameState={gameState} movePlayer={movePlayer} />
-            </Canvas>
+            </Card>
           </div>
-          
-          {/* Controles móveis */}
-          <div className="absolute bottom-24 left-0 right-0 flex justify-center gap-4 md:hidden">
-            <Button 
-              variant="outline" 
-              size="icon"
-              onTouchStart={() => movePlayer('left')}
-              className="glassmorphism"
-            >
-              ←
-            </Button>
-            <Button 
-              variant="outline" 
-              size="icon"
-              onTouchStart={() => movePlayer('jump')}
-              className="glassmorphism"
-            >
-              ↑
-            </Button>
-            <Button 
-              variant="outline" 
-              size="icon"
-              onTouchStart={() => movePlayer('right')}
-              className="glassmorphism"
-            >
-              →
-            </Button>
-          </div>
-
-          {/* Pausa overlay */}
-          {gameState.isPaused && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <Card className="glassmorphism p-6 text-center">
-                <h3 className="text-xl font-semibold mb-4">Jogo Pausado</h3>
-                <p className="text-muted-foreground mb-4">Respire fundo e relaxe 🧘‍♂️</p>
-                <Button onClick={pauseGame}>
-                  <Play className="mr-2 h-4 w-4" />
-                  Continuar
-                </Button>
-              </Card>
-            </div>
-          )}
-        </Card>
-
-        {/* Game Over */}
-        {!gameState.isPlaying && gameState.stats.score > 0 && (
-          <Card className="glassmorphism">
-            <CardContent className="p-6 text-center space-y-4">
-              <h2 className="text-2xl font-semibold">Sessão 3D de Tranquilidade Concluída! 🌟</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <div className="text-2xl font-bold text-accent">{gameState.stats.score}</div>
-                  <div className="text-sm text-muted-foreground">Pontos</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-blue-500">{gameState.stats.calmBubbles}</div>
-                  <div className="text-sm text-muted-foreground">Bolhas de Calma</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-yellow-500">{gameState.stats.lightRays}</div>
-                  <div className="text-sm text-muted-foreground">Raios de Leveza</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-purple-500">{gameState.stats.focusSymbols}</div>
-                  <div className="text-sm text-muted-foreground">Símbolos de Foco</div>
-                </div>
-              </div>
-              <div className="flex gap-2 justify-center">
-                <Button onClick={startGame}>
-                  <Play className="mr-2 h-4 w-4" />
-                  Jogar Novamente
-                </Button>
-                <Button variant="outline" onClick={onBack}>
-                  Voltar ao Menu
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         )}
       </div>
+
+      {/* Game Over estilizado */}
+      {!gameState.isPlaying && gameState.stats.score > 0 && (
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center backdrop-blur-sm">
+          <Card className="glassmorphism p-8 text-center bg-white/10 border-white/20 max-w-md mx-4">
+            <h2 className="text-3xl font-semibold text-white mb-6">✨ Jornada Completada!</h2>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-300">{gameState.stats.calmBubbles}</div>
+                <div className="text-white/70">Bolhas de Calma</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-yellow-300">{gameState.stats.lightRays}</div>
+                <div className="text-white/70">Cristais de Leveza</div>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3">
+              <Button 
+                onClick={startGame}
+                className="bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 text-white"
+              >
+                <Play className="mr-2 h-4 w-4" />
+                Nova Jornada
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={onBack}
+                className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+              >
+                Explorar Outros Mundos
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
