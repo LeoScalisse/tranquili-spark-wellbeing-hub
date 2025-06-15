@@ -162,41 +162,45 @@ const TrainingObjectives: React.FC<TrainingObjectivesProps> = ({ onComplete, onS
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col">
+      <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+        <div className="text-center py-8 px-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
             Objetivos de Treino Mental
           </h1>
-          <p className="text-gray-600">
+          <p className="text-lg md:text-xl text-gray-600">
             Escolha as áreas que você gostaria de desenvolver
           </p>
         </div>
 
-        {/* Category Slide */}
-        <Card className="mb-6 overflow-hidden">
-          <CardContent className="p-0">
-            <CategorySlide 
-              category={categories[currentSlide]}
-              isSelected={selectedCategories.includes(categories[currentSlide].id)}
-              onSelect={() => handleCategorySelect(categories[currentSlide].id)}
-            />
-          </CardContent>
-        </Card>
+        {/* Category Slide - Now takes full available space */}
+        <div className="flex-1 px-4 md:px-8">
+          <Card className="h-full overflow-hidden shadow-2xl">
+            <CardContent className="p-0 h-full">
+              <CategorySlide 
+                category={categories[currentSlide]}
+                isSelected={selectedCategories.includes(categories[currentSlide].id)}
+                onSelect={() => handleCategorySelect(categories[currentSlide].id)}
+              />
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Progress Indicator */}
-        <ProgressIndicator 
-          currentSlide={currentSlide}
-          totalSlides={categories.length}
-          onSlideSelect={(index) => {
-            playGameSound('click');
-            setCurrentSlide(index);
-          }}
-        />
+        <div className="py-6">
+          <ProgressIndicator 
+            currentSlide={currentSlide}
+            totalSlides={categories.length}
+            onSlideSelect={(index) => {
+              playGameSound('click');
+              setCurrentSlide(index);
+            }}
+          />
+        </div>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center mt-8">
+        <div className="flex justify-between items-center p-6 bg-white/50 backdrop-blur-sm">
           <Button
             variant="outline"
             onClick={handlePrevious}
@@ -239,8 +243,8 @@ const TrainingObjectives: React.FC<TrainingObjectivesProps> = ({ onComplete, onS
 
         {/* Selected Summary */}
         {selectedCategories.length > 0 && (
-          <div className="mt-6 p-4 bg-white/50 rounded-lg backdrop-blur-sm">
-            <p className="text-sm text-gray-600 mb-2">
+          <div className="p-6 bg-white/70 backdrop-blur-sm border-t">
+            <p className="text-sm text-gray-600 mb-3">
               Áreas selecionadas para treino:
             </p>
             <div className="flex flex-wrap gap-2">
@@ -249,7 +253,7 @@ const TrainingObjectives: React.FC<TrainingObjectivesProps> = ({ onComplete, onS
                 return (
                   <span
                     key={categoryId}
-                    className="px-3 py-1 rounded-full text-sm font-medium"
+                    className="px-4 py-2 rounded-full text-sm font-medium"
                     style={{ 
                       backgroundColor: category?.color + '20',
                       color: category?.color 
