@@ -1,3 +1,4 @@
+
 import { useNavigate } from 'react-router-dom';
 import { useAudio } from '@/contexts/AudioContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,8 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Gamepad2, Brain, Puzzle, Clock, Trophy } from 'lucide-react';
 import ColorConfusionGame from '@/components/games/ColorConfusionGame';
 import MemoryFragmentsGame from '@/components/games/MemoryFragmentsGame';
+import TrainingObjectives from '@/components/games/TrainingObjectives';
 import GameAudioWrapper from '@/components/GameAudioWrapper';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Game {
   id: string;
@@ -17,6 +19,7 @@ interface Game {
   difficulty: 'Fácil' | 'Médio' | 'Difícil';
   estimatedTime: string;
   benefits: string[];
+  categories: string[];
 }
 
 const games: Game[] = [
@@ -27,7 +30,8 @@ const games: Game[] = [
     icon: <Brain className="h-8 w-8" />,
     difficulty: 'Médio',
     estimatedTime: '3-5 min',
-    benefits: ['Concentração', 'Atenção', 'Controle cognitivo']
+    benefits: ['Concentração', 'Atenção', 'Controle cognitivo'],
+    categories: ['attention', 'inhibition', 'processing']
   },
   {
     id: 'memory-fragments',
@@ -36,14 +40,63 @@ const games: Game[] = [
     icon: <Puzzle className="h-8 w-8" />,
     difficulty: 'Fácil',
     estimatedTime: '5-10 min',
-    benefits: ['Memória', 'Relaxamento', 'Criatividade']
+    benefits: ['Memória', 'Relaxamento', 'Criatividade'],
+    categories: ['memory', 'working-memory', 'flexibility']
   }
 ];
 
 const TranquiliGamesPage = () => {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [filteredGames, setFilteredGames] = useState(games);
   const { playGameSound } = useAudio();
   const navigate = useNavigate();
+
+  // Check if user has completed onboarding
+  useEffect(() => {
+    const hasCompletedOnboarding = localStorage.getItem('tranquili-games-onboarding');
+    if (!hasCompletedOnboarding) {
+      setShowOnboarding(true);
+    } else {
+      const savedCategories = localStorage.getItem('tranquili-games-categories');
+      if (savedCategories) {
+        const categories = JSON.parse(savedCategories);
+        setSelectedCategories(categories);
+        filterGamesByCategories(categories);
+      }
+    }
+  }, []);
+
+  const filterGamesByCategories = (categories: string[]) => {
+    if (categories.length === 0) {
+      setFilteredGames(games);
+      return;
+    }
+
+    const filtered = games.filter(game => 
+      game.categories.some(category => categories.includes(category))
+    );
+    setFilteredGames(filtered);
+  };
+
+  const handleOnboardingComplete = (categories: string[]) => {
+    setSelectedCategories(categories);
+    setShowOnboarding(false);
+    
+    // Save to localStorage
+    localStorage.setItem('tranquili-games-onboarding', 'true');
+    localStorage.setItem('tranquili-games-categories', JSON.stringify(categories));
+    
+    filterGamesByCategories(categories);
+    playGameSound('victory');
+  };
+
+  const handleOnboardingSkip = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('tranquili-games-onboarding', 'true');
+    playGameSound('click');
+  };
 
   const handleGameSelect = (gameId: string) => {
     playGameSound('click');
@@ -55,6 +108,15 @@ const TranquiliGamesPage = () => {
     setSelectedGame(null);
   };
 
+  const resetOnboarding = () => {
+    localStorage.removeItem('tranquili-games-onboarding');
+    localStorage.removeItem('tranquili-games-categories');
+    setSelectedCategories([]);
+    setShowOnboarding(true);
+    setFilteredGames(games);
+    playGameSound('click');
+  };
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'Fácil': return 'bg-green-500';
@@ -64,6 +126,17 @@ const TranquiliGamesPage = () => {
     }
   };
 
+  // Show onboarding
+  if (showOnboarding) {
+    return (
+      <TrainingObjectives
+        onComplete={handleOnboardingComplete}
+        onSkip={handleOnboardingSkip}
+      />
+    );
+  }
+
+  // Show selected game
   if (selectedGame === 'color-confusion') {
     return (
       <GameAudioWrapper gameType="color">
@@ -80,6 +153,7 @@ const TranquiliGamesPage = () => {
     );
   }
 
+  // Show games menu
   return (
     <div className="min-h-screen p-4">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -106,11 +180,36 @@ const TranquiliGamesPage = () => {
                 Mini-jogos relaxantes para exercitar sua mente
               </p>
             </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetOnboarding}
+              className="ml-4"
+            >
+              ⚙️ Revisar Objetivos
+            </Button>
           </CardHeader>
         </Card>
 
+        {/* Selected Categories Display */}
+        {selectedCategories.length > 0 && (
+          <Card className="glassmorphism">
+            <CardContent className="p-4">
+              <h3 className="font-medium mb-3">Suas áreas de treino selecionadas:</h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedCategories.map(categoryId => (
+                  <Badge key={categoryId} variant="secondary" className="text-xs">
+                    {categoryId.charAt(0).toUpperCase() + categoryId.slice(1).replace('-', ' ')}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {games.map((game) => (
+          {filteredGames.map((game) => (
             <Card 
               key={game.id}
               className="glassmorphism hover:scale-105 transition-transform cursor-pointer"
