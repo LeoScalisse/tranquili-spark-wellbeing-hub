@@ -9,7 +9,7 @@ interface Achievement {
   title: string;
   description: string;
   icon: React.ReactNode;
-  category: 'mood' | 'streak' | 'interaction' | 'exploration';
+  category: 'mood' | 'streak' | 'interaction' | 'exploration' | 'games' | 'social';
   requirement: number;
 }
 
@@ -38,6 +38,8 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
       case 'streak': return 'text-green-500';
       case 'interaction': return 'text-purple-500';
       case 'exploration': return 'text-orange-500';
+      case 'games': return 'text-red-500';
+      case 'social': return 'text-pink-500';
       default: return 'text-gray-500';
     }
   };
@@ -48,6 +50,8 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
       case 'streak': return 'Sequência';
       case 'interaction': return 'Interação';
       case 'exploration': return 'Exploração';
+      case 'games': return 'Jogos';
+      case 'social': return 'Social';
       default: return 'Geral';
     }
   };
