@@ -18,235 +18,262 @@ export const useAudioSounds = (
   const typingLoopRef = useRef<Tone.Loop | null>(null);
   const ambientLoopRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Sons de humor da página inicial - frequências terapêuticas
-  const playMoodSound = useCallback(async (moodType: MoodType) => {
-    if (!isSoundOn || !synths?.synth) return;
-    
-    await startToneIfNeeded();
-
-    switch (moodType) {
-      case 'happy':
-        // Frequência 528 Hz (Love frequency) - tom alegre mas suave
-        synths.synth.triggerAttackRelease('C5', '2.0');
-        break;
-        
-      case 'sad':
-        // Frequência 396 Hz (Liberation) - tom acolhedor
-        synths.synth.triggerAttackRelease('G3', '3.0');
-        break;
-        
-      case 'calm':
-        // Frequência 432 Hz (Natural harmony) - máxima tranquilidade
-        synths.synth.triggerAttackRelease('A4', '4.0');
-        break;
-        
-      case 'anxious':
-        // Sequência suave descendente para acalmar
-        synths.synth.triggerAttackRelease('E4', '1.5');
-        setTimeout(() => {
-          if (synths.synth) synths.synth.triggerAttackRelease('C4', '2.0');
-        }, 800);
-        break;
-        
-      case 'angry':
-        // Tom grave e envolvente para acalmar a raiva
-        synths.synth.triggerAttackRelease('D3', '2.5');
-        break;
-        
-      case 'thoughtful':
-        // Progressão contemplativa suave
-        synths.synth.triggerAttackRelease('F4', '2.0');
-        setTimeout(() => {
-          if (synths.synth) synths.synth.triggerAttackRelease('A4', '2.0');
-        }, 1200);
-        break;
+  // Função auxiliar para verificar se o áudio está pronto
+  const isAudioReady = useCallback(() => {
+    if (!isSoundOn) {
+      console.log('🔇 Som desabilitado pelo usuário');
+      return false;
     }
-  }, [isSoundOn, startToneIfNeeded, synths]);
+    
+    if (!synths) {
+      console.log('❌ Sintetizadores não inicializados');
+      return false;
+    }
+    
+    if (Tone.context.state !== 'running') {
+      console.log('❌ Contexto de áudio não está rodando:', Tone.context.state);
+      return false;
+    }
+    
+    return true;
+  }, [isSoundOn, synths]);
 
-  // Som de confirmação ultra suave
+  // Função auxiliar para reproduzir som com tratamento de erro
+  const playSoundSafely = useCallback(async (soundFn: () => void, soundName: string) => {
+    try {
+      if (!isAudioReady()) return;
+      
+      await startToneIfNeeded();
+      
+      if (Tone.context.state !== 'running') {
+        console.warn(`⚠️ Não foi possível reproduzir som "${soundName}": contexto não ativo`);
+        return;
+      }
+      
+      soundFn();
+      console.log(`🎵 Som reproduzido: ${soundName}`);
+    } catch (error) {
+      console.error(`❌ Erro ao reproduzir som "${soundName}":`, error);
+    }
+  }, [isAudioReady, startToneIfNeeded]);
+
+  // Sons de humor da página inicial - com tratamento de erro
+  const playMoodSound = useCallback(async (moodType: MoodType) => {
+    await playSoundSafely(() => {
+      if (!synths?.synth) return;
+      
+      switch (moodType) {
+        case 'happy':
+          synths.synth.triggerAttackRelease('C5', '2.0');
+          break;
+        case 'sad':
+          synths.synth.triggerAttackRelease('G3', '3.0');
+          break;
+        case 'calm':
+          synths.synth.triggerAttackRelease('A4', '4.0');
+          break;
+        case 'anxious':
+          synths.synth.triggerAttackRelease('E4', '1.5');
+          setTimeout(() => {
+            if (synths.synth) synths.synth.triggerAttackRelease('C4', '2.0');
+          }, 800);
+          break;
+        case 'angry':
+          synths.synth.triggerAttackRelease('D3', '2.5');
+          break;
+        case 'thoughtful':
+          synths.synth.triggerAttackRelease('F4', '2.0');
+          setTimeout(() => {
+            if (synths.synth) synths.synth.triggerAttackRelease('A4', '2.0');
+          }, 1200);
+          break;
+      }
+    }, `mood-${moodType}`);
+  }, [playSoundSafely, synths]);
+
+  // Som de confirmação
   const playMoodConfirmation = useCallback(async () => {
-    if (!isSoundOn || !synths?.polySynth) return;
-    
-    await startToneIfNeeded();
-    
-    // Acorde suave de confirmação
-    synths.polySynth.triggerAttackRelease(['C4', 'E4', 'G4'], '1.5');
-  }, [isSoundOn, startToneIfNeeded, synths]);
+    await playSoundSafely(() => {
+      if (!synths?.polySynth) return;
+      synths.polySynth.triggerAttackRelease(['C4', 'E4', 'G4'], '1.5');
+    }, 'mood-confirmation');
+  }, [playSoundSafely, synths]);
 
-  // Som de digitação ultra discreto
+  // Som de digitação
   const startTypingSound = useCallback(async () => {
-    if (!isSoundOn || !synths?.noiseSynth || typingLoopRef.current) return;
+    if (!isAudioReady() || typingLoopRef.current) return;
     
-    await startToneIfNeeded();
-    
-    // Ruído rosa muito suave em pulsos longos
-    typingLoopRef.current = new Tone.Loop((time) => {
-      synths.noiseSynth?.triggerAttackRelease('0.08', time);
-    }, '0.4').start(0);
-    
-    Tone.Transport.start();
-  }, [isSoundOn, startToneIfNeeded, synths]);
+    await playSoundSafely(() => {
+      if (!synths?.noiseSynth) return;
+      
+      typingLoopRef.current = new Tone.Loop((time) => {
+        synths.noiseSynth?.triggerAttackRelease('0.08', time);
+      }, '0.4').start(0);
+      
+      Tone.Transport.start();
+    }, 'typing-start');
+  }, [isAudioReady, playSoundSafely, synths]);
 
   const stopTypingSound = useCallback(() => {
     if (typingLoopRef.current) {
       typingLoopRef.current.dispose();
       typingLoopRef.current = null;
       Tone.Transport.stop();
+      console.log('🎵 Som de digitação parado');
     }
   }, []);
 
-  // Função de digitação única mais suave
   const playTypingSound = useCallback(async () => {
-    if (!isSoundOn || !synths?.noiseSynth) return;
-    
-    await startToneIfNeeded();
-    synths.noiseSynth.triggerAttackRelease('0.05');
-  }, [isSoundOn, startToneIfNeeded, synths]);
+    await playSoundSafely(() => {
+      if (!synths?.noiseSynth) return;
+      synths.noiseSynth.triggerAttackRelease('0.05');
+    }, 'typing-single');
+  }, [playSoundSafely, synths]);
 
-  // Som de conquista celestial e inspirador
+  // Som de conquista
   const playAchievementSound = useCallback(async () => {
-    if (!isSoundOn || !synths?.polySynth || !synths?.synth) return;
-    
-    await startToneIfNeeded();
-    
-    // Progressão harmônica celestial
-    synths.polySynth.triggerAttackRelease(['C4', 'E4', 'G4'], '2.0');
-    
-    setTimeout(() => {
-      if (synths.polySynth) {
-        synths.polySynth.triggerAttackRelease(['F4', 'A4', 'C5'], '2.5');
-      }
-    }, 1500);
-    
-    setTimeout(() => {
-      if (synths.polySynth) {
-        synths.polySynth.triggerAttackRelease(['G4', 'B4', 'D5'], '3.0');
-      }
-    }, 3000);
-    
-    setTimeout(() => {
-      if (synths.synth) {
-        synths.synth.triggerAttackRelease('C6', '4.0');
-      }
-    }, 4500);
-  }, [isSoundOn, startToneIfNeeded, synths]);
+    await playSoundSafely(() => {
+      if (!synths?.polySynth || !synths?.synth) return;
+      
+      synths.polySynth.triggerAttackRelease(['C4', 'E4', 'G4'], '2.0');
+      
+      setTimeout(() => {
+        if (synths.polySynth) {
+          synths.polySynth.triggerAttackRelease(['F4', 'A4', 'C5'], '2.5');
+        }
+      }, 1500);
+      
+      setTimeout(() => {
+        if (synths.polySynth) {
+          synths.polySynth.triggerAttackRelease(['G4', 'B4', 'D5'], '3.0');
+        }
+      }, 3000);
+      
+      setTimeout(() => {
+        if (synths.synth) {
+          synths.synth.triggerAttackRelease('C6', '4.0');
+        }
+      }, 4500);
+    }, 'achievement');
+  }, [playSoundSafely, synths]);
 
-  // Sons dos jogos - todos suavizados
+  // Sons dos jogos
   const playGameSound = useCallback(async (type: GameSoundType) => {
-    if (!isSoundOn || !synths?.synth || !synths?.polySynth) return;
-    
-    await startToneIfNeeded();
+    await playSoundSafely(() => {
+      if (!synths?.synth || !synths?.polySynth) return;
 
-    switch (type) {
-      case 'correct':
-        synths.polySynth.triggerAttackRelease(['C4', 'E4', 'G4'], '1.5');
-        break;
-        
-      case 'incorrect':
-        synths.synth.triggerAttackRelease('A3', '1.0');
-        setTimeout(() => {
-          if (synths.synth) synths.synth.triggerAttackRelease('F3', '1.2');
-        }, 600);
-        break;
-        
-      case 'click':
-        synths.synth.triggerAttackRelease('E5', '0.3');
-        break;
-        
-      case 'victory':
-        synths.polySynth.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '3.0');
-        setTimeout(() => {
-          if (synths.polySynth) {
-            synths.polySynth.triggerAttackRelease(['F4', 'A4', 'C5', 'F5'], '2.5');
-          }
-        }, 1800);
-        break;
-    }
-  }, [isSoundOn, startToneIfNeeded, synths]);
+      switch (type) {
+        case 'correct':
+          synths.polySynth.triggerAttackRelease(['C4', 'E4', 'G4'], '1.5');
+          break;
+        case 'incorrect':
+          synths.synth.triggerAttackRelease('A3', '1.0');
+          setTimeout(() => {
+            if (synths.synth) synths.synth.triggerAttackRelease('F3', '1.2');
+          }, 600);
+          break;
+        case 'click':
+          synths.synth.triggerAttackRelease('E5', '0.3');
+          break;
+        case 'victory':
+          synths.polySynth.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '3.0');
+          setTimeout(() => {
+            if (synths.polySynth) {
+              synths.polySynth.triggerAttackRelease(['F4', 'A4', 'C5', 'F5'], '2.5');
+            }
+          }, 1800);
+          break;
+      }
+    }, `game-${type}`);
+  }, [playSoundSafely, synths]);
 
-  // Sons das cartas ultra suaves
+  // Sons das cartas
   const playCardSound = useCallback(async (type: CardSoundType) => {
-    if (!isSoundOn || !synths?.synth || !synths?.fmSynth) return;
-    
-    await startToneIfNeeded();
+    await playSoundSafely(() => {
+      if (!synths?.synth || !synths?.fmSynth) return;
 
-    switch (type) {
-      case 'flip':
-        synths.fmSynth.triggerAttackRelease('G5', '0.8');
-        break;
-        
-      case 'match':
-        synths.synth.triggerAttackRelease('C5', '1.5');
-        setTimeout(() => {
-          if (synths.synth) synths.synth.triggerAttackRelease('E5', '1.0');
-        }, 400);
-        break;
-        
-      case 'mismatch':
-        synths.synth.triggerAttackRelease('A4', '0.8');
-        break;
-    }
-  }, [isSoundOn, startToneIfNeeded, synths]);
+      switch (type) {
+        case 'flip':
+          synths.fmSynth.triggerAttackRelease('G5', '0.8');
+          break;
+        case 'match':
+          synths.synth.triggerAttackRelease('C5', '1.5');
+          setTimeout(() => {
+            if (synths.synth) synths.synth.triggerAttackRelease('E5', '1.0');
+          }, 400);
+          break;
+        case 'mismatch':
+          synths.synth.triggerAttackRelease('A4', '0.8');
+          break;
+      }
+    }, `card-${type}`);
+  }, [playSoundSafely, synths]);
 
-  // Som ambiente dos jogos - atmosferas relaxantes
+  // Som ambiente dos jogos
   const startGameAmbient = useCallback(async (gameType: GameType) => {
-    if (!isSoundOn) return;
+    if (!isAudioReady()) return;
     
     await startToneIfNeeded();
     
     const playAmbientTone = () => {
       if (!synths?.synth || !isSoundOn) return;
       
-      if (gameType === 'color') {
-        const notes = ['C3', 'E3', 'G3', 'B3'];
-        const randomNote = notes[Math.floor(Math.random() * notes.length)];
-        synths.synth.triggerAttackRelease(randomNote, '6.0');
-      } else {
-        const notes = ['F3', 'A3', 'C4', 'E4'];
-        const randomNote = notes[Math.floor(Math.random() * notes.length)];
-        synths.synth.triggerAttackRelease(randomNote, '5.0');
+      try {
+        if (gameType === 'color') {
+          const notes = ['C3', 'E3', 'G3', 'B3'];
+          const randomNote = notes[Math.floor(Math.random() * notes.length)];
+          synths.synth.triggerAttackRelease(randomNote, '6.0');
+        } else {
+          const notes = ['F3', 'A3', 'C4', 'E4'];
+          const randomNote = notes[Math.floor(Math.random() * notes.length)];
+          synths.synth.triggerAttackRelease(randomNote, '5.0');
+        }
+        console.log(`🎵 Som ambiente: ${gameType}`);
+      } catch (error) {
+        console.error('❌ Erro no som ambiente:', error);
       }
     };
     
     playAmbientTone();
     ambientLoopRef.current = setInterval(playAmbientTone, 8000);
-  }, [isSoundOn, startToneIfNeeded, synths]);
+  }, [isAudioReady, startToneIfNeeded, synths, isSoundOn]);
 
   const stopGameAmbient = useCallback(() => {
     if (ambientLoopRef.current) {
       clearInterval(ambientLoopRef.current);
       ambientLoopRef.current = null;
+      console.log('🎵 Som ambiente parado');
     }
   }, []);
 
-  // Sons adicionais suavizados
+  // Sons adicionais
   const playClickSound = useCallback(async () => {
-    if (!isSoundOn || !synths?.synth) return;
-    
-    await startToneIfNeeded();
-    synths.synth.triggerAttackRelease('C5', '0.4');
-  }, [isSoundOn, startToneIfNeeded, synths]);
+    await playSoundSafely(() => {
+      if (!synths?.synth) return;
+      synths.synth.triggerAttackRelease('C5', '0.4');
+    }, 'click');
+  }, [playSoundSafely, synths]);
 
   const playSuccessSound = useCallback(async () => {
-    if (!isSoundOn || !synths?.polySynth) return;
-    
-    await startToneIfNeeded();
-    synths.polySynth.triggerAttackRelease(['C4', 'E4', 'G4'], '2.0');
-  }, [isSoundOn, startToneIfNeeded, synths]);
+    await playSoundSafely(() => {
+      if (!synths?.polySynth) return;
+      synths.polySynth.triggerAttackRelease(['C4', 'E4', 'G4'], '2.0');
+    }, 'success');
+  }, [playSoundSafely, synths]);
 
   const playTransitionSound = useCallback(async () => {
-    if (!isSoundOn || !synths?.synth) return;
-    
-    await startToneIfNeeded();
-    
-    synths.synth.triggerAttackRelease('C4', '1.0');
-    setTimeout(() => {
-      if (synths.synth) synths.synth.triggerAttackRelease('E4', '1.0');
-    }, 800);
-    setTimeout(() => {
-      if (synths.synth) synths.synth.triggerAttackRelease('G4', '1.5');
-    }, 1600);
-  }, [isSoundOn, startToneIfNeeded, synths]);
+    await playSoundSafely(() => {
+      if (!synths?.synth) return;
+      
+      synths.synth.triggerAttackRelease('C4', '1.0');
+      setTimeout(() => {
+        if (synths.synth) synths.synth.triggerAttackRelease('E4', '1.0');
+      }, 800);
+      setTimeout(() => {
+        if (synths.synth) synths.synth.triggerAttackRelease('G4', '1.5');
+      }, 1600);
+    }, 'transition');
+  }, [playSoundSafely, synths]);
 
   return {
     playMoodSound,

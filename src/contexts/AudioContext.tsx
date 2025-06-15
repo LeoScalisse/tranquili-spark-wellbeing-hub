@@ -19,56 +19,88 @@ export const useAudio = () => {
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSoundOn, setIsSoundOn] = useState(true);
   const [soundProfile, setSoundProfile] = useState('default');
+  const [isInitialized, setIsInitialized] = useState(false);
   
   // Refs para efeitos e sintetizadores
   const effectsRef = useRef<ReturnType<typeof createAudioEffects> | null>(null);
   const synthsRef = useRef<ReturnType<typeof createAudioSynths> | null>(null);
   const isToneStartedRef = useRef(false);
 
-  // Inicialização dos sintetizadores com configurações mais suaves
+  // Inicialização otimizada dos sintetizadores
   useEffect(() => {
     const initializeAudio = async () => {
-      // Criar efeitos
-      effectsRef.current = createAudioEffects();
-      
-      // Aguardar carregamento do reverb
-      if (effectsRef.current.reverb) {
-        await effectsRef.current.reverb.generate();
+      try {
+        console.log('🎵 Inicializando sistema de áudio...');
+        
+        // Criar efeitos
+        effectsRef.current = createAudioEffects();
+        
+        // Aguardar carregamento do reverb antes de criar sintetizadores
+        if (effectsRef.current.reverb) {
+          console.log('⏳ Aguardando carregamento do reverb...');
+          await effectsRef.current.reverb.generate();
+          console.log('✅ Reverb carregado');
+        }
+        
+        // Criar sintetizadores apenas após reverb estar pronto
+        synthsRef.current = createAudioSynths(effectsRef.current.effectChain);
+        
+        setIsInitialized(true);
+        console.log('✅ Sistema de áudio inicializado com sucesso');
+        
+      } catch (error) {
+        console.error('❌ Erro na inicialização do áudio:', error);
+        setIsInitialized(false);
       }
-      
-      // Criar sintetizadores
-      synthsRef.current = createAudioSynths(effectsRef.current.effectChain);
     };
 
     initializeAudio();
 
     return () => {
-      // Cleanup
-      synthsRef.current?.synth?.dispose();
-      synthsRef.current?.fmSynth?.dispose();
-      synthsRef.current?.polySynth?.dispose();
-      synthsRef.current?.noiseSynth?.dispose();
-      effectsRef.current?.reverb?.dispose();
-      effectsRef.current?.delay?.dispose();
-      effectsRef.current?.filter?.dispose();
+      console.log('🧹 Limpando recursos de áudio...');
+      // Cleanup otimizado
+      try {
+        synthsRef.current?.synth?.dispose();
+        synthsRef.current?.fmSynth?.dispose();
+        synthsRef.current?.polySynth?.dispose();
+        synthsRef.current?.noiseSynth?.dispose();
+        effectsRef.current?.reverb?.dispose();
+        effectsRef.current?.delay?.dispose();
+        effectsRef.current?.filter?.dispose();
+      } catch (error) {
+        console.error('❌ Erro no cleanup de áudio:', error);
+      }
     };
   }, []);
 
-  // Função para iniciar o Tone.js
+  // Função melhorada para iniciar o Tone.js
   const startToneIfNeeded = useCallback(async () => {
-    if (!isToneStartedRef.current && Tone.context.state !== 'running') {
-      await Tone.start();
-      isToneStartedRef.current = true;
+    try {
+      if (!isToneStartedRef.current && Tone.context.state !== 'running') {
+        console.log('🎵 Iniciando contexto Tone.js...');
+        await Tone.start();
+        isToneStartedRef.current = true;
+        console.log('✅ Contexto Tone.js ativo:', Tone.context.state);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao iniciar Tone.js:', error);
+      throw error;
     }
   }, []);
 
-  // Toggle do som
+  // Toggle do som com feedback
   const toggleSound = useCallback(() => {
-    setIsSoundOn(prev => !prev);
-  }, []);
+    const newState = !isSoundOn;
+    setIsSoundOn(newState);
+    console.log(`🔊 Som ${newState ? 'habilitado' : 'desabilitado'}`);
+  }, [isSoundOn]);
 
-  // Hook para sons
-  const audioSounds = useAudioSounds(isSoundOn, synthsRef.current, startToneIfNeeded);
+  // Hook para sons com verificação de inicialização
+  const audioSounds = useAudioSounds(
+    isSoundOn && isInitialized, 
+    synthsRef.current, 
+    startToneIfNeeded
+  );
 
   // Legacy functions for backward compatibility
   const toggleAudio = toggleSound;

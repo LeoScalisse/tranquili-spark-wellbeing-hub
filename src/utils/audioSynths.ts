@@ -2,7 +2,9 @@
 import * as Tone from 'tone';
 
 export const createAudioSynths = (effectChain: Tone.ToneAudioNode) => {
-  // Sintetizador principal - configuração ultra suave
+  console.log('🎼 Criando sintetizadores com volumes otimizados...');
+
+  // Sintetizador principal - volume aumentado de -15 para -5
   const synth = new Tone.Synth({
     oscillator: { 
       type: 'sine',
@@ -14,10 +16,10 @@ export const createAudioSynths = (effectChain: Tone.ToneAudioNode) => {
       sustain: 0.3, 
       release: 2.5 
     },
-    volume: -15
+    volume: -5  // Aumentado de -15
   }).connect(effectChain);
 
-  // FM Synth para texturas suaves
+  // FM Synth para texturas suaves - volume aumentado
   const fmSynth = new Tone.FMSynth({
     harmonicity: 1.5,
     modulationIndex: 2,
@@ -29,10 +31,10 @@ export const createAudioSynths = (effectChain: Tone.ToneAudioNode) => {
       sustain: 0.4, 
       release: 3.0 
     },
-    volume: -18
+    volume: -8  // Aumentado de -18
   }).connect(effectChain);
 
-  // PolySynth para acordes harmônicos
+  // PolySynth para acordes harmônicos - volume aumentado
   const polySynth = new Tone.PolySynth(Tone.Synth, {
     oscillator: { 
       type: 'sine',
@@ -44,10 +46,10 @@ export const createAudioSynths = (effectChain: Tone.ToneAudioNode) => {
       sustain: 0.5, 
       release: 4.0 
     },
-    volume: -20
+    volume: -10  // Aumentado de -20
   }).connect(effectChain);
 
-  // Noise Synth extremamente suave para texturas
+  // Noise Synth - volume aumentado mas ainda discreto
   const noiseSynth = new Tone.NoiseSynth({
     noise: { type: 'pink' },
     envelope: { 
@@ -56,8 +58,10 @@ export const createAudioSynths = (effectChain: Tone.ToneAudioNode) => {
       sustain: 0.1, 
       release: 1.5 
     },
-    volume: -25
+    volume: -15  // Aumentado de -25
   }).connect(effectChain);
+
+  console.log('✅ Sintetizadores criados com sucesso');
 
   return {
     synth,
