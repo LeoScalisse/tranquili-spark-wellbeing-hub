@@ -2,7 +2,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useAudio } from '@/contexts/AudioContext';
 import ColorConfusionGame from '@/components/games/ColorConfusionGame';
+import ColorConfusionIntroduction from '@/components/games/ColorConfusionIntroduction';
 import MemoryFragmentsGame from '@/components/games/MemoryFragmentsGame';
+import MemoryFragmentsIntroduction from '@/components/games/MemoryFragmentsIntroduction';
 import TrainingObjectives from '@/components/games/TrainingObjectives';
 import GameAudioWrapper from '@/components/GameAudioWrapper';
 import GamesHeader from '@/components/games/GamesHeader';
@@ -13,6 +15,7 @@ import { useState, useEffect } from 'react';
 
 const TranquiliGamesPage = () => {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const [showGameIntro, setShowGameIntro] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [filteredGames, setFilteredGames] = useState(games);
@@ -66,12 +69,23 @@ const TranquiliGamesPage = () => {
 
   const handleGameSelect = (gameId: string) => {
     playGameSound('click');
+    setShowGameIntro(gameId);
+  };
+
+  const handlePlayGame = (gameId: string) => {
+    setShowGameIntro(null);
     setSelectedGame(gameId);
   };
 
   const handleBackToMenu = () => {
     playGameSound('click');
     setSelectedGame(null);
+    setShowGameIntro(null);
+  };
+
+  const handleBackToGameList = () => {
+    playGameSound('click');
+    setShowGameIntro(null);
   };
 
   const resetOnboarding = () => {
@@ -94,6 +108,25 @@ const TranquiliGamesPage = () => {
       <TrainingObjectives
         onComplete={handleOnboardingComplete}
         onSkip={handleOnboardingSkip}
+      />
+    );
+  }
+
+  // Show game introduction
+  if (showGameIntro === 'color-confusion') {
+    return (
+      <ColorConfusionIntroduction
+        onPlay={() => handlePlayGame('color-confusion')}
+        onBack={handleBackToGameList}
+      />
+    );
+  }
+
+  if (showGameIntro === 'memory-fragments') {
+    return (
+      <MemoryFragmentsIntroduction
+        onPlay={() => handlePlayGame('memory-fragments')}
+        onBack={handleBackToGameList}
       />
     );
   }
