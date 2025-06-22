@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { GardenGameState, PlantedElement, GameStats, PlantElement } from '@/types/botanicalGarden';
-import { botanicalElements, milestones } from '@/data/botanicalElements';
+import { botanicalElements } from '@/data/botanicalElements';
 
 const GRID_SIZE = 50;
 const STORAGE_KEY = 'botanical-garden-save';
@@ -26,7 +26,6 @@ const initialState: GardenGameState = {
 export const useBotanicalGarden = () => {
   const [gameState, setGameState] = useState<GardenGameState>(initialState);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [showMilestone, setShowMilestone] = useState<string | null>(null);
   const timeUpdateRef = useRef<NodeJS.Timeout>();
 
   // Inicializar áudio
@@ -124,40 +123,19 @@ export const useBotanicalGarden = () => {
     }
   }, [audioContext]);
 
-  // Verificar e desbloquear marcos
-  const checkMilestones = useCallback((stats: GameStats, progress: any) => {
-    const newUnlocks: string[] = [];
-    const newMilestones: string[] = [];
+  // Desbloquear novos elementos baseado na quantidade plantada
+  const unlockNewElements = useCallback((plantsPlanted: number) => {
+    const currentUnlocked = gameState.progress.unlockedElements.length;
+    const shouldUnlock = Math.floor(plantsPlanted / 3); // A cada 3 plantas plantadas
+    const newUnlockCount = Math.min(shouldUnlock + 3, botanicalElements.length); // +3 iniciais
 
-    milestones.forEach(milestone => {
-      if (progress.milestones.includes(milestone.id)) return;
-
-      let shouldUnlock = false;
-      switch (milestone.type) {
-        case 'plants':
-          shouldUnlock = stats.plantsPlanted >= milestone.requirement;
-          break;
-        case 'touches':
-          shouldUnlock = stats.totalTouches >= milestone.requirement;
-          break;
-        case 'melodies':
-          shouldUnlock = stats.melodiesCreated >= milestone.requirement;
-          break;
-      }
-
-      if (shouldUnlock) {
-        newMilestones.push(milestone.id);
-        newUnlocks.push(...milestone.unlocks);
-        setShowMilestone(milestone.id);
-        setTimeout(() => setShowMilestone(null), 3000);
-      }
-    });
-
-    return {
-      unlockedElements: [...progress.unlockedElements, ...newUnlocks],
-      milestones: [...progress.milestones, ...newMilestones]
-    };
-  }, []);
+    if (newUnlockCount > currentUnlocked) {
+      const newElements = botanicalElements.slice(0, newUnlockCount).map(el => el.id);
+      return newElements;
+    }
+    
+    return gameState.progress.unlockedElements;
+  }, [gameState.progress.unlockedElements]);
 
   // Plantar elemento
   const plantElement = useCallback((position: number) => {
@@ -178,16 +156,21 @@ export const useBotanicalGarden = () => {
       plantedAt: Date.now()
     };
 
+    // Tocar som imediatamente ao plantar
+    playPlantSound(randomElement);
+
     setGameState(prev => {
       const newGrid = [...prev.grid];
       newGrid[position] = newPlant;
 
       const newStats = {
         ...prev.stats,
-        plantsPlanted: prev.stats.plantsPlanted + 1
+        plantsPlanted: prev.stats.plantsPlanted + 1,
+        totalTouches: prev.stats.totalTouches + 1, // Contar o plantio como um toque
+        melodiesCreated: Math.floor((prev.stats.totalTouches + 1) / 10)
       };
 
-      const updatedProgress = checkMilestones(newStats, prev.progress);
+      const newUnlockedElements = unlockNewElements(newStats.plantsPlanted);
 
       return {
         ...prev,
@@ -195,13 +178,13 @@ export const useBotanicalGarden = () => {
         stats: newStats,
         progress: {
           ...prev.progress,
-          ...updatedProgress
+          unlockedElements: newUnlockedElements
         }
       };
     });
-  }, [gameState.grid, gameState.progress.unlockedElements, checkMilestones]);
+  }, [gameState.grid, gameState.progress.unlockedElements, playPlantSound, unlockNewElements]);
 
-  // Tocar planta
+  // Tocar planta existente
   const touchPlant = useCallback((position: number) => {
     const plant = gameState.grid[position];
     if (!plant) return;
@@ -218,18 +201,12 @@ export const useBotanicalGarden = () => {
         melodiesCreated: Math.floor((prev.stats.totalTouches + 1) / 10)
       };
 
-      const updatedProgress = checkMilestones(newStats, prev.progress);
-
       return {
         ...prev,
-        stats: newStats,
-        progress: {
-          ...prev.progress,
-          ...updatedProgress
-        }
+        stats: newStats
       };
     });
-  }, [gameState.grid, playPlantSound, checkMilestones]);
+  }, [gameState.grid, playPlantSound]);
 
   // Mudar modo de jogo
   const changeGameMode = useCallback((mode: 'free' | 'harmony' | 'flow') => {
@@ -248,7 +225,6 @@ export const useBotanicalGarden = () => {
     touchPlant,
     changeGameMode,
     resetGarden,
-    showMilestone,
     availableElements: botanicalElements.filter(el => 
       gameState.progress.unlockedElements.includes(el.id)
     ),

@@ -4,7 +4,6 @@ import { botanicalElements } from '@/data/botanicalElements';
 import GardenGrid from './GardenGrid';
 import GardenStats from './GardenStats';
 import GameModeSelector from './GameModeSelector';
-import MilestoneNotification from './MilestoneNotification';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RefreshCw, Home } from 'lucide-react';
@@ -20,7 +19,6 @@ const BotanicalGardenGame: React.FC<BotanicalGardenGameProps> = ({ onBack }) => 
     touchPlant,
     changeGameMode,
     resetGarden,
-    showMilestone,
     availableElements,
     progressPercentage
   } = useBotanicalGarden();
@@ -127,9 +125,6 @@ const BotanicalGardenGame: React.FC<BotanicalGardenGameProps> = ({ onBack }) => 
           </CardContent>
         </Card>
       </div>
-
-      {/* Notificação de Marco */}
-      <MilestoneNotification milestoneId={showMilestone} />
     </div>
   );
 };
