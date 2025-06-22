@@ -12,7 +12,8 @@ export const useAudioInitialization = () => {
       console.log('🎵 Inicializando sistema de áudio...');
       
       // Verificar se o contexto já está rodando
-      if (Tone.context.state === 'running') {
+      const currentState = Tone.context.state;
+      if (currentState === 'running') {
         console.log('✅ Contexto de áudio já está ativo');
         setIsAudioReady(true);
         setNeedsUserInteraction(false);
@@ -24,7 +25,8 @@ export const useAudioInitialization = () => {
       console.log('✅ Tone.js iniciado com sucesso');
       
       // Verificar se realmente funcionou
-      if (Tone.context.state === 'running') {
+      const newState = Tone.context.state;
+      if (newState === 'running') {
         setIsAudioReady(true);
         setNeedsUserInteraction(false);
         setAudioError(null);
