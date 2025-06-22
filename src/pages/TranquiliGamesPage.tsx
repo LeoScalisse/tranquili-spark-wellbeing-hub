@@ -1,4 +1,3 @@
-
 import { useNavigate } from 'react-router-dom';
 import { useAudio } from '@/contexts/AudioContext';
 import ColorConfusionGame from '@/components/games/ColorConfusionGame';
@@ -7,6 +6,7 @@ import MemoryFragmentsGame from '@/components/games/MemoryFragmentsGame';
 import MemoryFragmentsIntroduction from '@/components/games/MemoryFragmentsIntroduction';
 import TranquiliMatchGame from '@/components/games/TranquiliMatchGame';
 import TranquiliMatchIntroduction from '@/components/games/TranquiliMatchIntroduction';
+import BotanicalGardenGame from '@/components/garden/BotanicalGardenGame';
 import TrainingObjectives from '@/components/games/TrainingObjectives';
 import GameAudioWrapper from '@/components/GameAudioWrapper';
 import GamesHeader from '@/components/games/GamesHeader';
@@ -71,7 +71,13 @@ const TranquiliGamesPage = () => {
 
   const handleGameSelect = (gameId: string) => {
     playGameSound('click');
-    setShowGameIntro(gameId);
+    
+    // Para o jardim botânico, ir direto para o jogo sem introdução
+    if (gameId === 'botanical-garden') {
+      setSelectedGame(gameId);
+    } else {
+      setShowGameIntro(gameId);
+    }
   };
 
   const handlePlayGame = (gameId: string) => {
@@ -165,6 +171,10 @@ const TranquiliGamesPage = () => {
         <TranquiliMatchGame onBack={handleBackToMenu} />
       </GameAudioWrapper>
     );
+  }
+
+  if (selectedGame === 'botanical-garden') {
+    return <BotanicalGardenGame onBack={handleBackToMenu} />;
   }
 
   // Show games menu

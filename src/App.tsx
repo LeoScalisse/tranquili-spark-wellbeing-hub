@@ -16,7 +16,6 @@ import ReportPage from "./pages/ReportPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import TranquiliSpacePage from "./pages/TranquiliSpacePage";
 import TranquiliGamesPage from "./pages/TranquiliGamesPage";
-import BotanicalGardenPage from "./pages/BotanicalGardenPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import GlobalAchievementWrapper from "./components/GlobalAchievementWrapper";

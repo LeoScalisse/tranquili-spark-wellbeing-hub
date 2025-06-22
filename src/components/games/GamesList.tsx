@@ -1,5 +1,5 @@
 
-import { Brain, Puzzle, Sparkles } from 'lucide-react';
+import { Brain, Puzzle, Sparkles, Flower } from 'lucide-react';
 import GameCard from './GameCard';
 
 interface Game {
@@ -48,6 +48,16 @@ export const games: Game[] = [
     estimatedTime: '5-15 min',
     benefits: ['Relaxamento', 'Concentração', 'Bem-estar'],
     categories: ['attention', 'relaxation', 'mindfulness']
+  },
+  {
+    id: 'botanical-garden',
+    title: 'Jardim Musical Relaxante',
+    description: 'Crie melodias plantando elementos botânicos musicais em um jardim virtual. Cada planta emite sons únicos quando tocada.',
+    icon: <Flower className="h-8 w-8" />,
+    difficulty: 'Fácil',
+    estimatedTime: '10-20 min',
+    benefits: ['Mindfulness', 'Criatividade musical', 'Relaxamento'],
+    categories: ['relaxation', 'mindfulness', 'creativity']
   }
 ];
 
