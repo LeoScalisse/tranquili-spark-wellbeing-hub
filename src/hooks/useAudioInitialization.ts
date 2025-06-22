@@ -43,9 +43,11 @@ export const useAudioInitialization = () => {
   // Verificar estado do áudio periodicamente
   useEffect(() => {
     const checkAudioState = () => {
-      const isRunning = Tone.context.state === 'running';
+      const contextState = Tone.context.state;
+      const isRunning = contextState === 'running';
+      
       if (isRunning !== isAudioReady) {
-        console.log(`🔄 Estado do áudio mudou: ${Tone.context.state}`);
+        console.log(`🔄 Estado do áudio mudou: ${contextState}`);
         setIsAudioReady(isRunning);
         setNeedsUserInteraction(!isRunning);
       }
