@@ -1,5 +1,5 @@
 
-import { Brain, Puzzle, Sparkles, Flower } from 'lucide-react';
+import { Brain, Puzzle, Sparkles, Flower, Grid3X3 } from 'lucide-react';
 import GameCard from './GameCard';
 
 interface Game {
@@ -58,6 +58,16 @@ export const games: Game[] = [
     estimatedTime: '10-20 min',
     benefits: ['Mindfulness', 'Criatividade musical', 'Relaxamento'],
     categories: ['relaxation', 'mindfulness', 'creativity']
+  },
+  {
+    id: 'tetris-tranquilo',
+    title: 'Tetris Tranquilo',
+    description: 'Uma versão zen do clássico Tetris em tons rosa pastel. Encaixe blocos enquanto cultiva mindfulness e relaxamento.',
+    icon: <Grid3X3 className="h-8 w-8" />,
+    difficulty: 'Médio',
+    estimatedTime: '10-30 min',
+    benefits: ['Estado de Flow', 'Concentração', 'Relaxamento'],
+    categories: ['attention', 'relaxation', 'mindfulness', 'flow']
   }
 ];
 

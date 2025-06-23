@@ -1,3 +1,4 @@
+
 import { useNavigate } from 'react-router-dom';
 import { useAudio } from '@/contexts/AudioContext';
 import ColorConfusionGame from '@/components/games/ColorConfusionGame';
@@ -6,6 +7,8 @@ import MemoryFragmentsGame from '@/components/games/MemoryFragmentsGame';
 import MemoryFragmentsIntroduction from '@/components/games/MemoryFragmentsIntroduction';
 import TranquiliMatchGame from '@/components/games/TranquiliMatchGame';
 import TranquiliMatchIntroduction from '@/components/games/TranquiliMatchIntroduction';
+import TetrisTranquiloGame from '@/components/games/TetrisTranquiloGame';
+import TetrisTranquiloIntroduction from '@/components/games/TetrisTranquiloIntroduction';
 import BotanicalGardenGame from '@/components/garden/BotanicalGardenGame';
 import TrainingObjectives from '@/components/games/TrainingObjectives';
 import GameAudioWrapper from '@/components/GameAudioWrapper';
@@ -148,6 +151,15 @@ const TranquiliGamesPage = () => {
     );
   }
 
+  if (showGameIntro === 'tetris-tranquilo') {
+    return (
+      <TetrisTranquiloIntroduction
+        onPlay={() => handlePlayGame('tetris-tranquilo')}
+        onBack={handleBackToGameList}
+      />
+    );
+  }
+
   // Show selected games
   if (selectedGame === 'color-confusion') {
     return (
@@ -171,6 +183,10 @@ const TranquiliGamesPage = () => {
         <TranquiliMatchGame onBack={handleBackToMenu} />
       </GameAudioWrapper>
     );
+  }
+
+  if (selectedGame === 'tetris-tranquilo') {
+    return <TetrisTranquiloGame onBack={handleBackToMenu} />;
   }
 
   if (selectedGame === 'botanical-garden') {
