@@ -1,44 +1,28 @@
 
 import { useNavigate } from 'react-router-dom';
 import { useAudio } from '@/contexts/AudioContext';
-import ColorConfusionGame from '@/components/games/ColorConfusionGame';
-import ColorConfusionIntroduction from '@/components/games/ColorConfusionIntroduction';
-import MemoryFragmentsGame from '@/components/games/MemoryFragmentsGame';
-import MemoryFragmentsIntroduction from '@/components/games/MemoryFragmentsIntroduction';
-import TranquiliMatchGame from '@/components/games/TranquiliMatchGame';
-import TranquiliMatchIntroduction from '@/components/games/TranquiliMatchIntroduction';
-import TetrisTranquiloGame from '@/components/games/TetrisTranquiloGame';
-import TetrisTranquiloIntroduction from '@/components/games/TetrisTranquiloIntroduction';
-import BotanicalGardenGame from '@/components/garden/BotanicalGardenGame';
-import TrainingObjectives from '@/components/games/TrainingObjectives';
-import GameAudioWrapper from '@/components/GameAudioWrapper';
-import GamesHeader from '@/components/games/GamesHeader';
-import SelectedCategoriesDisplay from '@/components/games/SelectedCategoriesDisplay';
-import GamesList, { games } from '@/components/games/GamesList';
-import GamesInfo from '@/components/games/GamesInfo';
+import OnboardingManager from '@/components/games/OnboardingManager';
+import GameIntroRenderer from '@/components/games/GameIntroRenderer';
+import GameRenderer from '@/components/games/GameRenderer';
+import GamesMenu from '@/components/games/GamesMenu';
+import { games } from '@/components/games/GamesList';
 import { useState, useEffect } from 'react';
 
 const TranquiliGamesPage = () => {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [showGameIntro, setShowGameIntro] = useState<string | null>(null);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [filteredGames, setFilteredGames] = useState(games);
   const { playGameSound } = useAudio();
   const navigate = useNavigate();
 
-  // Check if user has completed onboarding
+  // Load saved categories on mount
   useEffect(() => {
-    const hasCompletedOnboarding = localStorage.getItem('tranquili-games-onboarding');
-    if (!hasCompletedOnboarding) {
-      setShowOnboarding(true);
-    } else {
-      const savedCategories = localStorage.getItem('tranquili-games-categories');
-      if (savedCategories) {
-        const categories = JSON.parse(savedCategories);
-        setSelectedCategories(categories);
-        filterGamesByCategories(categories);
-      }
+    const savedCategories = localStorage.getItem('tranquili-games-categories');
+    if (savedCategories) {
+      const categories = JSON.parse(savedCategories);
+      setSelectedCategories(categories);
+      filterGamesByCategories(categories);
     }
   }, []);
 
@@ -54,22 +38,9 @@ const TranquiliGamesPage = () => {
     setFilteredGames(filtered);
   };
 
-  const handleOnboardingComplete = (categories: string[]) => {
+  const handleCategoriesUpdate = (categories: string[]) => {
     setSelectedCategories(categories);
-    setShowOnboarding(false);
-    
-    // Save to localStorage
-    localStorage.setItem('tranquili-games-onboarding', 'true');
-    localStorage.setItem('tranquili-games-categories', JSON.stringify(categories));
-    
     filterGamesByCategories(categories);
-    playGameSound('victory');
-  };
-
-  const handleOnboardingSkip = () => {
-    setShowOnboarding(false);
-    localStorage.setItem('tranquili-games-onboarding', 'true');
-    playGameSound('click');
   };
 
   const handleGameSelect = (gameId: string) => {
@@ -103,9 +74,10 @@ const TranquiliGamesPage = () => {
     localStorage.removeItem('tranquili-games-onboarding');
     localStorage.removeItem('tranquili-games-categories');
     setSelectedCategories([]);
-    setShowOnboarding(true);
     setFilteredGames(games);
     playGameSound('click');
+    // Force page reload to show onboarding
+    window.location.reload();
   };
 
   const handleBackClick = () => {
@@ -113,105 +85,36 @@ const TranquiliGamesPage = () => {
     navigate('/');
   };
 
-  // Show onboarding
-  if (showOnboarding) {
-    return (
-      <TrainingObjectives
-        onComplete={handleOnboardingComplete}
-        onSkip={handleOnboardingSkip}
-      />
-    );
-  }
-
-  // Show game introductions
-  if (showGameIntro === 'color-confusion') {
-    return (
-      <ColorConfusionIntroduction
-        onPlay={() => handlePlayGame('color-confusion')}
-        onBack={handleBackToGameList}
-      />
-    );
-  }
-
-  if (showGameIntro === 'memory-fragments') {
-    return (
-      <MemoryFragmentsIntroduction
-        onPlay={() => handlePlayGame('memory-fragments')}
-        onBack={handleBackToGameList}
-      />
-    );
-  }
-
-  if (showGameIntro === 'tranquili-match') {
-    return (
-      <TranquiliMatchIntroduction
-        onPlay={() => handlePlayGame('tranquili-match')}
-        onBack={handleBackToGameList}
-      />
-    );
-  }
-
-  if (showGameIntro === 'tetris-tranquilo') {
-    return (
-      <TetrisTranquiloIntroduction
-        onPlay={() => handlePlayGame('tetris-tranquilo')}
-        onBack={handleBackToGameList}
-      />
-    );
-  }
-
-  // Show selected games
-  if (selectedGame === 'color-confusion') {
-    return (
-      <GameAudioWrapper gameType="color">
-        <ColorConfusionGame onBack={handleBackToMenu} />
-      </GameAudioWrapper>
-    );
-  }
-
-  if (selectedGame === 'memory-fragments') {
-    return (
-      <GameAudioWrapper gameType="memory">
-        <MemoryFragmentsGame onBack={handleBackToMenu} />
-      </GameAudioWrapper>
-    );
-  }
-
-  if (selectedGame === 'tranquili-match') {
-    return (
-      <GameAudioWrapper gameType="memory">
-        <TranquiliMatchGame onBack={handleBackToMenu} />
-      </GameAudioWrapper>
-    );
-  }
-
-  if (selectedGame === 'tetris-tranquilo') {
-    return <TetrisTranquiloGame onBack={handleBackToMenu} />;
-  }
-
-  if (selectedGame === 'botanical-garden') {
-    return <BotanicalGardenGame onBack={handleBackToMenu} />;
-  }
-
-  // Show games menu
   return (
-    <div className="min-h-screen p-4">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <GamesHeader 
+    <OnboardingManager onComplete={handleCategoriesUpdate}>
+      {/* Show game introductions */}
+      {showGameIntro && (
+        <GameIntroRenderer
+          gameIntro={showGameIntro}
+          onPlay={handlePlayGame}
+          onBack={handleBackToGameList}
+        />
+      )}
+
+      {/* Show selected games */}
+      {selectedGame && (
+        <GameRenderer
+          selectedGame={selectedGame}
+          onBack={handleBackToMenu}
+        />
+      )}
+
+      {/* Show games menu */}
+      {!showGameIntro && !selectedGame && (
+        <GamesMenu
+          selectedCategories={selectedCategories}
+          filteredGames={filteredGames}
+          onGameSelect={handleGameSelect}
           onBackClick={handleBackClick}
           onResetOnboarding={resetOnboarding}
         />
-
-        <SelectedCategoriesDisplay selectedCategories={selectedCategories} />
-
-        <GamesList 
-          filteredGames={filteredGames}
-          onGameSelect={handleGameSelect}
-        />
-
-        <GamesInfo />
-      </div>
-    </div>
+      )}
+    </OnboardingManager>
   );
 };
 
