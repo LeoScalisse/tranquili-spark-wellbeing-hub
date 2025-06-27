@@ -4,6 +4,7 @@ import MemoryFragmentsGame from '@/components/games/MemoryFragmentsGame';
 import TranquiliMatchGame from '@/components/games/TranquiliMatchGame';
 import TetrisTranquiloGame from '@/components/games/TetrisTranquiloGame';
 import BotanicalGardenGame from '@/components/garden/BotanicalGardenGame';
+import BambooTowerGame from '@/components/games/BambooTowerGame';
 import GameAudioWrapper from '@/components/GameAudioWrapper';
 
 interface GameRendererProps {
@@ -39,6 +40,13 @@ const GameRenderer: React.FC<GameRendererProps> = ({ selectedGame, onBack }) => 
 
     case 'botanical-garden':
       return <BotanicalGardenGame onBack={onBack} />;
+
+    case 'bamboo-tower':
+      return (
+        <GameAudioWrapper gameType="bamboo">
+          <BambooTowerGame onBack={onBack} />
+        </GameAudioWrapper>
+      );
 
     default:
       return null;

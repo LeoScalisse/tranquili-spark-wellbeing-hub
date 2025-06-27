@@ -1,7 +1,6 @@
-
 import { useCallback, useRef } from 'react';
 import * as Tone from 'tone';
-import { MoodType, GameSoundType, CardSoundType, GameType } from '@/types/audio';
+import { MoodType, GameSoundType, CardSoundType, GameType, BambooSoundType } from '@/types/audio';
 
 interface AudioSynths {
   synth: Tone.Synth;
@@ -209,6 +208,47 @@ export const useAudioSounds = (
     }, `card-${type}`);
   }, [playSoundSafely, synths]);
 
+  // Sons do jogo Torre de Bambu
+  const playBambooSound = useCallback(async (type: BambooSoundType) => {
+    await playSoundSafely(() => {
+      if (!synths?.synth || !synths?.polySynth || !synths?.fmSynth) return;
+
+      switch (type) {
+        case 'place':
+          // Som suave de bambu se encostando
+          synths.fmSynth.triggerAttackRelease('D4', '0.8');
+          setTimeout(() => {
+            if (synths.fmSynth) synths.fmSynth.triggerAttackRelease('A4', '0.6');
+          }, 200);
+          break;
+        case 'perfect':
+          // Sino leve para encaixe perfeito
+          synths.polySynth.triggerAttackRelease(['C5', 'E5', 'G5'], '1.5');
+          break;
+        case 'fall':
+          // Som de madeira oca caindo (suave)
+          synths.synth.triggerAttackRelease('C3', '1.2');
+          setTimeout(() => {
+            if (synths.synth) synths.synth.triggerAttackRelease('A2', '0.8');
+          }, 400);
+          break;
+        case 'wind':
+          // Som de vento suave
+          if (synths.noiseSynth) {
+            synths.noiseSynth.triggerAttackRelease('2.0');
+          }
+          break;
+        case 'bell':
+          // Toque de sino zen
+          synths.fmSynth.triggerAttackRelease('G5', '2.0');
+          setTimeout(() => {
+            if (synths.fmSynth) synths.fmSynth.triggerAttackRelease('E5', '1.8');
+          }, 800);
+          break;
+      }
+    }, `bamboo-${type}`);
+  }, [playSoundSafely, synths]);
+
   // Som ambiente dos jogos
   const startGameAmbient = useCallback(async (gameType: GameType) => {
     if (!isAudioReady()) return;
@@ -223,6 +263,11 @@ export const useAudioSounds = (
           const notes = ['C3', 'E3', 'G3', 'B3'];
           const randomNote = notes[Math.floor(Math.random() * notes.length)];
           synths.synth.triggerAttackRelease(randomNote, '6.0');
+        } else if (gameType === 'bamboo') {
+          // Ambiente zen para Torre de Bambu
+          const pentatonic = ['C4', 'D4', 'F4', 'G4', 'A4'];
+          const randomNote = pentatonic[Math.floor(Math.random() * pentatonic.length)];
+          synths.synth.triggerAttackRelease(randomNote, '8.0');
         } else {
           const notes = ['F3', 'A3', 'C4', 'E4'];
           const randomNote = notes[Math.floor(Math.random() * notes.length)];
@@ -235,7 +280,8 @@ export const useAudioSounds = (
     };
     
     playAmbientTone();
-    ambientLoopRef.current = setInterval(playAmbientTone, 8000);
+    const interval = gameType === 'bamboo' ? 12000 : 8000; // Mais espaçado para bambu
+    ambientLoopRef.current = setInterval(playAmbientTone, interval);
   }, [isAudioReady, startToneIfNeeded, synths, isSoundOn]);
 
   const stopGameAmbient = useCallback(() => {
@@ -284,6 +330,7 @@ export const useAudioSounds = (
     playAchievementSound,
     playGameSound,
     playCardSound,
+    playBambooSound,
     startGameAmbient,
     stopGameAmbient,
     playClickSound,

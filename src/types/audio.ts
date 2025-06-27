@@ -2,7 +2,8 @@
 export type MoodType = 'happy' | 'sad' | 'calm' | 'anxious' | 'angry' | 'thoughtful';
 export type GameSoundType = 'correct' | 'incorrect' | 'click' | 'victory';
 export type CardSoundType = 'flip' | 'match' | 'mismatch';
-export type GameType = 'color' | 'memory';
+export type GameType = 'color' | 'memory' | 'bamboo';
+export type BambooSoundType = 'place' | 'perfect' | 'fall' | 'wind' | 'bell';
 
 export interface AudioContextType {
   // Controles globais
@@ -30,6 +31,7 @@ export interface AudioContextType {
   // Sons dos jogos
   playGameSound: (type: GameSoundType) => void;
   playCardSound: (type: CardSoundType) => void;
+  playBambooSound: (type: BambooSoundType) => void;
   
   // Sons ambiente dos jogos
   startGameAmbient: (gameType: GameType) => void;
