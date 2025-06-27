@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ interface TetrisTranquiloGameProps {
 interface Piece {
   shape: number[][];
   color: string;
+  colorIndex: number;
 }
 
 interface Position {
@@ -33,13 +35,13 @@ const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 
 const PIECES: Piece[] = [
-  { shape: [[1, 1, 1, 1]], color: 'bg-cyan-500' },    // I
-  { shape: [[1, 1], [1, 1]], color: 'bg-yellow-500' },  // O
-  { shape: [[0, 1, 1], [1, 1, 0]], color: 'bg-green-500' },   // S
-  { shape: [[1, 1, 0], [0, 1, 1]], color: 'bg-red-500' },     // Z
-  { shape: [[1, 0, 0], [1, 1, 1]], color: 'bg-orange-500' },  // L
-  { shape: [[0, 0, 1], [1, 1, 1]], color: 'bg-blue-500' },   // J
-  { shape: [[0, 1, 0], [1, 1, 1]], color: 'bg-purple-500' }   // T
+  { shape: [[1, 1, 1, 1]], color: 'bg-cyan-500', colorIndex: 1 },    // I
+  { shape: [[1, 1], [1, 1]], color: 'bg-yellow-500', colorIndex: 2 },  // O
+  { shape: [[0, 1, 1], [1, 1, 0]], color: 'bg-green-500', colorIndex: 3 },   // S
+  { shape: [[1, 1, 0], [0, 1, 1]], color: 'bg-red-500', colorIndex: 4 },     // Z
+  { shape: [[1, 0, 0], [1, 1, 1]], color: 'bg-orange-500', colorIndex: 5 },  // L
+  { shape: [[0, 0, 1], [1, 1, 1]], color: 'bg-blue-500', colorIndex: 6 },   // J
+  { shape: [[0, 1, 0], [1, 1, 1]], color: 'bg-purple-500', colorIndex: 7 }   // T
 ];
 
 const GAME_MODES: GameMode[] = [
@@ -101,16 +103,32 @@ const TetrisTranquiloGame: React.FC<TetrisTranquiloGameProps> = ({ onBack }) => 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const blockSize = isMobile ? 25 : 30;
+    const blockSize = isMobile ? 20 : 30;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Desenha o tabuleiro
     for (let y = 0; y < BOARD_HEIGHT; y++) {
       for (let x = 0; x < BOARD_WIDTH; x++) {
         if (board[y][x] !== 0) {
-          const piece = PIECES.find(p => p.color === board[y][x]);
-          ctx.fillStyle = piece?.color || 'white';
-          ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+          const piece = PIECES.find(p => p.colorIndex === board[y][x]);
+          if (piece) {
+            ctx.fillStyle = piece.color.replace('bg-', '').replace('-500', '');
+            // Converter cores do Tailwind para valores CSS
+            const colorMap: { [key: string]: string } = {
+              'cyan': '#06b6d4',
+              'yellow': '#eab308', 
+              'green': '#22c55e',
+              'red': '#ef4444',
+              'orange': '#f97316',
+              'blue': '#3b82f6',
+              'purple': '#a855f7'
+            };
+            const colorName = piece.color.replace('bg-', '').replace('-500', '');
+            ctx.fillStyle = colorMap[colorName] || '#ffffff';
+            ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+            ctx.strokeStyle = '#ffffff';
+            ctx.strokeRect(x * blockSize, y * blockSize, blockSize, blockSize);
+          }
         }
       }
     }
@@ -119,8 +137,20 @@ const TetrisTranquiloGame: React.FC<TetrisTranquiloGameProps> = ({ onBack }) => 
     currentPiece.shape.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         if (cell) {
-          ctx.fillStyle = currentPiece.color;
+          const colorName = currentPiece.color.replace('bg-', '').replace('-500', '');
+          const colorMap: { [key: string]: string } = {
+            'cyan': '#06b6d4',
+            'yellow': '#eab308', 
+            'green': '#22c55e',
+            'red': '#ef4444',
+            'orange': '#f97316',
+            'blue': '#3b82f6',
+            'purple': '#a855f7'
+          };
+          ctx.fillStyle = colorMap[colorName] || '#ffffff';
           ctx.fillRect((piecePosition.x + colIndex) * blockSize, (piecePosition.y + rowIndex) * blockSize, blockSize, blockSize);
+          ctx.strokeStyle = '#ffffff';
+          ctx.strokeRect((piecePosition.x + colIndex) * blockSize, (piecePosition.y + rowIndex) * blockSize, blockSize, blockSize);
         }
       });
     });
@@ -198,7 +228,7 @@ const TetrisTranquiloGame: React.FC<TetrisTranquiloGameProps> = ({ onBack }) => 
       for (let y = 0; y < currentPiece.shape.length; y++) {
         for (let x = 0; x < currentPiece.shape[y].length; x++) {
           if (currentPiece.shape[y][x] !== 0) {
-            newBoard[piecePosition.y + y][piecePosition.x + x] = currentPiece.color;
+            newBoard[piecePosition.y + y][piecePosition.x + x] = currentPiece.colorIndex;
           }
         }
       }
@@ -217,8 +247,11 @@ const TetrisTranquiloGame: React.FC<TetrisTranquiloGameProps> = ({ onBack }) => 
         });
 
         setScore(prevScore => prevScore + clearedLines.length * 100 * level);
-        setLines(prevLines => prevLines + clearedLines.length);
-        setLevel(prevLevel => prevLevel + Math.floor((prevLines + clearedLines.length) / 10));
+        setLines(prevLines => {
+          const newLines = prevLines + clearedLines.length;
+          setLevel(prevLevel => prevLevel + Math.floor(newLines / 10));
+          return newLines;
+        });
       }
 
       setBoard(newBoard);
@@ -232,21 +265,21 @@ const TetrisTranquiloGame: React.FC<TetrisTranquiloGameProps> = ({ onBack }) => 
         setGameStarted(false);
 
         if (user) {
-          updateGameProgress('tetrisTranquilo', {
+          updateGameProgress('tranquiliMatch', {
             currentLevel: level,
-            highestLevel: Math.max(level, user.gameProgress?.tetrisTranquilo?.highestLevel || 0),
-            totalMatches: (user.gameProgress?.tetrisTranquilo?.totalMatches || 0) + lines,
-            timePlayedToday: (user.gameProgress?.tetrisTranquilo?.timePlayedToday || 0) + 1,
+            highestLevel: Math.max(level, user.gameProgress?.tranquiliMatch?.highestLevel || 0),
+            totalMatches: (user.gameProgress?.tranquiliMatch?.totalMatches || 0) + lines,
+            timePlayedToday: (user.gameProgress?.tranquiliMatch?.timePlayedToday || 0) + 1,
             lastPlayDate: new Date().toISOString().split('T')[0]
           });
         }
         addXP(Math.floor(score / 10));
-        playGameSound('error');
+        playGameSound('incorrect');
       } else {
-        playGameSound('card');
+        playGameSound('correct');
       }
     }
-  }, [isPaused, gameOver, currentPiece, piecePosition, checkCollision, board, level, playGameSound, addXP, user, updateGameProgress, gameStarted]);
+  }, [isPaused, gameOver, currentPiece, piecePosition, checkCollision, board, level, playGameSound, addXP, user, updateGameProgress, gameStarted, lines, score]);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -338,15 +371,6 @@ const TetrisTranquiloGame: React.FC<TetrisTranquiloGameProps> = ({ onBack }) => 
     }
 
     touchStartRef.current = null;
-  }, [isMobile, handleKeyPress]);
-
-  const handleTap = useCallback((e: React.TouchEvent) => {
-    if (!isMobile) return;
-    
-    // Tap para girar peça
-    if (e.touches.length === 1) {
-      handleKeyPress({ key: ' ' } as KeyboardEvent);
-    }
   }, [isMobile, handleKeyPress]);
 
   return (
@@ -452,7 +476,7 @@ const TetrisTranquiloGame: React.FC<TetrisTranquiloGameProps> = ({ onBack }) => 
                 <div 
                   ref={gameRef}
                   className={`mx-auto bg-gradient-to-br from-pink-200 to-purple-200 rounded-lg p-4 ${
-                    isMobile ? 'w-full max-w-[280px]' : 'w-fit'
+                    isMobile ? 'w-full max-w-[220px]' : 'w-fit'
                   }`}
                   onTouchStart={handleTouchStart}
                   onTouchEnd={handleTouchEnd}
@@ -461,8 +485,8 @@ const TetrisTranquiloGame: React.FC<TetrisTranquiloGameProps> = ({ onBack }) => 
                 >
                   <canvas
                     ref={canvasRef}
-                    width={isMobile ? 250 : 300}
-                    height={isMobile ? 400 : 500}
+                    width={isMobile ? 200 : 300}
+                    height={isMobile ? 400 : 600}
                     className="border-2 border-pink-300 rounded bg-white/80"
                   />
                 </div>
