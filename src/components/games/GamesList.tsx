@@ -1,6 +1,6 @@
-
 import { Brain, Puzzle, Sparkles, Flower, Grid3X3 } from 'lucide-react';
 import GameCard from './GameCard';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Game {
   id: string;
@@ -72,8 +72,14 @@ export const games: Game[] = [
 ];
 
 const GamesList: React.FC<GamesListProps> = ({ filteredGames, onGameSelect }) => {
+  const isMobile = useIsMobile();
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className={`grid gap-6 ${
+      isMobile 
+        ? 'grid-cols-1' 
+        : 'grid-cols-1 md:grid-cols-2'
+    }`}>
       {filteredGames.map((game) => (
         <GameCard 
           key={game.id}
