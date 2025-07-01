@@ -1,5 +1,4 @@
-
-import { Brain, Puzzle, Sparkles, Flower, Grid3X3, Building } from 'lucide-react';
+import { Brain, Puzzle, Sparkles, Flower, Grid3X3 } from 'lucide-react';
 import GameCard from './GameCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -69,16 +68,6 @@ export const games: Game[] = [
     estimatedTime: '10-30 min',
     benefits: ['Estado de Flow', 'Concentração', 'Relaxamento'],
     categories: ['attention', 'relaxation', 'mindfulness', 'flow']
-  },
-  {
-    id: 'bamboo-tower',
-    title: 'Torre de Bambu',
-    description: 'Empilhe blocos de bambu com precisão em uma experiência zen. Cada movimento requer foco e paciência para construir a torre mais alta.',
-    icon: <Building className="h-8 w-8" />,
-    difficulty: 'Médio',
-    estimatedTime: '5-15 min',
-    benefits: ['Estado de Flow', 'Foco e Precisão', 'Controle Emocional'],
-    categories: ['attention', 'mindfulness', 'flow', 'precision']
   }
 ];
 

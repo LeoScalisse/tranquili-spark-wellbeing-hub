@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useAudio } from '@/contexts/AudioContext';
 
 interface GameAudioWrapperProps {
-  gameType: 'color' | 'memory' | 'bamboo';
+  gameType: 'color' | 'memory';
   children: React.ReactNode;
 }
 
