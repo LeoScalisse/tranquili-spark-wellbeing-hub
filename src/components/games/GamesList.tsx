@@ -1,4 +1,5 @@
-import { Brain, Puzzle, Sparkles, Flower, Grid3X3 } from 'lucide-react';
+
+import { Brain, Puzzle, Sparkles, Flower, Grid3X3, BookOpen } from 'lucide-react';
 import GameCard from './GameCard';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -68,6 +69,16 @@ export const games: Game[] = [
     estimatedTime: '10-30 min',
     benefits: ['Estado de Flow', 'Concentração', 'Relaxamento'],
     categories: ['attention', 'relaxation', 'mindfulness', 'flow']
+  },
+  {
+    id: 'flashcard-study',
+    title: 'Cartões de Estudo',
+    description: 'Transforme qualquer conteúdo em cartões de estudo interativos. Use a técnica de repetição espaçada para memorizar informações.',
+    icon: <BookOpen className="h-8 w-8" />,
+    difficulty: 'Fácil',
+    estimatedTime: '5-20 min',
+    benefits: ['Memória', 'Aprendizado', 'Concentração'],
+    categories: ['memory', 'learning', 'attention', 'retention']
   }
 ];
 

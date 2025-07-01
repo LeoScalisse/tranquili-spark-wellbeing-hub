@@ -18,6 +18,11 @@ export interface User {
       timePlayedToday: number;
       lastPlayDate: string;
     };
+    flashcardStudy?: {
+      cardsStudied: number;
+      totalTimeSpent: number;
+      lastStudyDate: string;
+    };
   };
 }
 

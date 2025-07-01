@@ -3,6 +3,7 @@ import ColorConfusionIntroduction from '@/components/games/ColorConfusionIntrodu
 import MemoryFragmentsIntroduction from '@/components/games/MemoryFragmentsIntroduction';
 import TranquiliMatchIntroduction from '@/components/games/TranquiliMatchIntroduction';
 import TetrisTranquiloIntroduction from '@/components/games/TetrisTranquiloIntroduction';
+import FlashcardStudyIntroduction from '@/components/games/FlashcardStudyIntroduction';
 
 interface GameIntroRendererProps {
   gameIntro: string;
@@ -40,6 +41,14 @@ const GameIntroRenderer: React.FC<GameIntroRendererProps> = ({ gameIntro, onPlay
       return (
         <TetrisTranquiloIntroduction
           onPlay={() => onPlay('tetris-tranquilo')}
+          onBack={onBack}
+        />
+      );
+
+    case 'flashcard-study':
+      return (
+        <FlashcardStudyIntroduction
+          onPlay={() => onPlay('flashcard-study')}
           onBack={onBack}
         />
       );

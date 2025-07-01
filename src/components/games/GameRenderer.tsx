@@ -3,6 +3,7 @@ import ColorConfusionGame from '@/components/games/ColorConfusionGame';
 import MemoryFragmentsGame from '@/components/games/MemoryFragmentsGame';
 import TranquiliMatchGame from '@/components/games/TranquiliMatchGame';
 import TetrisTranquiloGame from '@/components/games/TetrisTranquiloGame';
+import FlashcardStudyGame from '@/components/games/FlashcardStudyGame';
 import BotanicalGardenGame from '@/components/garden/BotanicalGardenGame';
 import GameAudioWrapper from '@/components/GameAudioWrapper';
 
@@ -39,6 +40,13 @@ const GameRenderer: React.FC<GameRendererProps> = ({ selectedGame, onBack }) => 
 
     case 'botanical-garden':
       return <BotanicalGardenGame onBack={onBack} />;
+
+    case 'flashcard-study':
+      return (
+        <GameAudioWrapper gameType="memory">
+          <FlashcardStudyGame onBack={onBack} />
+        </GameAudioWrapper>
+      );
 
     default:
       return null;
