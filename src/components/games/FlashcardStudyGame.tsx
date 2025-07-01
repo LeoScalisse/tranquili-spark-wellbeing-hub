@@ -61,7 +61,7 @@ const FlashcardStudyGame: React.FC<FlashcardStudyGameProps> = ({ onBack }) => {
       console.error('Error generating flashcards:', error);
       setError('Erro ao gerar flashcards. Tente novamente.');
       setMode('create');
-      playGameSound('error');
+      playGameSound('incorrect');
     }
   };
 
