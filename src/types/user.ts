@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string;
@@ -10,15 +9,7 @@ export interface User {
   lastMoodDate?: string;
   achievements: string[];
   moods: MoodEntry[];
-  gameProgress?: {
-    tranquiliMatch?: {
-      currentLevel: number;
-      highestLevel: number;
-      totalMatches: number;
-      timePlayedToday: number;
-      lastPlayDate: string;
-    };
-  };
+  gameProgress?: GameProgress;
 }
 
 export interface MoodEntry {
@@ -28,6 +19,25 @@ export interface MoodEntry {
   color: string;
   date: string;
   timestamp: number;
+}
+
+export interface GameProgress {
+  tranquiliMatch?: {
+    currentLevel: number;
+    highestLevel: number;
+    totalMatches: number;
+    timePlayedToday: number;
+    lastPlayDate: string;
+  };
+  bambooTower?: {
+    highestTower: number;
+    totalBlocks: number;
+    perfectPlacements: number;
+    gamesPlayed: number;
+    unlockedThemes: string[];
+    unlockedModes: string[];
+    lastPlayDate: string;
+  };
 }
 
 export interface UserContextType {
