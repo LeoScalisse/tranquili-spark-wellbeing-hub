@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,14 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAudio } from '@/contexts/AudioContext';
 import { useUser } from '@/contexts/UserContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { claudeService, type Flashcard } from '@/services/claudeService';
 
 interface FlashcardStudyGameProps {
   onBack: () => void;
-}
-
-interface Flashcard {
-  front: string;
-  back: string;
 }
 
 const FlashcardStudyGame: React.FC<FlashcardStudyGameProps> = ({ onBack }) => {
@@ -28,6 +23,7 @@ const FlashcardStudyGame: React.FC<FlashcardStudyGameProps> = ({ onBack }) => {
   const [animating, setAnimating] = useState(false);
   const [studyStats, setStudyStats] = useState({ cardsStudied: 0, timeSpent: 0 });
   const [startTime, setStartTime] = useState<number>(0);
+  const [error, setError] = useState<string>('');
   
   const { playGameSound, playCardSound } = useAudio();
   const { addXP, updateGameProgress } = useUser();
@@ -43,63 +39,30 @@ const FlashcardStudyGame: React.FC<FlashcardStudyGameProps> = ({ onBack }) => {
     if (!topic.trim()) return;
     
     setMode('loading');
+    setError('');
     playGameSound('click');
     
-    // Simular geração de flashcards (em uma aplicação real, seria conectado a uma API)
-    const mockFlashcards: Flashcard[] = await new Promise((resolve) => {
-      setTimeout(() => {
-        if (activeTab === 'describe') {
-          // Gerar flashcards baseados no tópico descrito
-          const topicLower = topic.toLowerCase();
-          if (topicLower.includes('brasil') || topicLower.includes('brazil')) {
-            resolve([
-              { front: "Capital do Brasil", back: "Brasília" },
-              { front: "Maior cidade do Brasil", back: "São Paulo" },
-              { front: "Moeda brasileira", back: "Real (R$)" },
-              { front: "Idioma oficial", back: "Português" },
-              { front: "Maior rio", back: "Rio Amazonas" },
-              { front: "Independência", back: "7 de setembro de 1822" },
-              { front: "Região mais populosa", back: "Sudeste" },
-              { front: "Bioma único brasileiro", back: "Cerrado" }
-            ]);
-          } else if (topicLower.includes('matemática') || topicLower.includes('math')) {
-            resolve([
-              { front: "π (Pi)", back: "Aproximadamente 3.14159" },
-              { front: "Teorema de Pitágoras", back: "a² + b² = c²" },
-              { front: "Derivada de x²", back: "2x" },
-              { front: "Integral de x", back: "x²/2 + C" },
-              { front: "Número de Euler", back: "e ≈ 2.71828" },
-              { front: "Fórmula quadrática", back: "x = (-b ± √(b²-4ac))/2a" }
-            ]);
-          } else {
-            // Flashcards genéricos baseados no tópico
-            resolve([
-              { front: "Conceito 1", back: "Definição relacionada ao tópico: " + topic },
-              { front: "Conceito 2", back: "Explicação importante sobre: " + topic },
-              { front: "Conceito 3", back: "Aspecto fundamental de: " + topic },
-              { front: "Conceito 4", back: "Característica principal: " + topic },
-              { front: "Conceito 5", back: "Elemento essencial: " + topic }
-            ]);
-          }
-        } else {
-          // Extrair flashcards do texto colado
-          const sentences = topic.split(/[.!?]+/).filter(s => s.trim());
-          const cards = sentences.slice(0, 6).map((sentence, index) => ({
-            front: `Conceito ${index + 1}`,
-            back: sentence.trim()
-          }));
-          resolve(cards.length > 0 ? cards : [
-            { front: "Texto analisado", back: "Conteúdo do texto fornecido" }
-          ]);
-        }
-      }, 2000);
-    });
-    
-    setFlashcards(mockFlashcards);
-    setCurrentIndex(0);
-    setFlipped(false);
-    setMode('study');
-    playGameSound('correct');
+    try {
+      console.log('Starting flashcard generation...');
+      const generatedFlashcards = await claudeService.generateFlashcards(topic);
+      
+      console.log('Generated flashcards:', generatedFlashcards);
+      
+      if (generatedFlashcards && generatedFlashcards.length > 0) {
+        setFlashcards(generatedFlashcards);
+        setCurrentIndex(0);
+        setFlipped(false);
+        setMode('study');
+        playGameSound('correct');
+      } else {
+        throw new Error('Nenhum flashcard foi gerado');
+      }
+    } catch (error) {
+      console.error('Error generating flashcards:', error);
+      setError('Erro ao gerar flashcards. Tente novamente.');
+      setMode('create');
+      playGameSound('error');
+    }
   };
 
   const handleFlip = () => {
@@ -183,9 +146,18 @@ const FlashcardStudyGame: React.FC<FlashcardStudyGameProps> = ({ onBack }) => {
               {isMobile && <span className="ml-2">Voltar</span>}
             </Button>
             <h1 className="text-white text-2xl md:text-4xl font-bold flex-1 text-center">
-              📚 Cartões de Estudo
+              📚 Cartões de Estudo IA
             </h1>
           </div>
+          
+          {/* Error Message */}
+          {error && (
+            <Card className="glassmorphism border-0 mb-6">
+              <CardContent className="p-4">
+                <p className="text-red-600 text-center">{error}</p>
+              </CardContent>
+            </Card>
+          )}
           
           {/* Tab Selection */}
           <div className="flex justify-center mb-6">
@@ -220,8 +192,8 @@ const FlashcardStudyGame: React.FC<FlashcardStudyGameProps> = ({ onBack }) => {
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder={activeTab === 'describe' 
-                  ? "Descreva um tópico para gerar cartões de estudo...\n\nEx: História do Brasil\nEx: Fórmulas de matemática básica\nEx: Vocabulário em inglês"
-                  : "Cole seu texto aqui..."
+                  ? "Descreva um tópico para gerar cartões de estudo com IA...\n\nEx: História do Brasil\nEx: Fórmulas de matemática básica\nEx: Vocabulário em inglês\nEx: Conceitos de biologia"
+                  : "Cole seu texto aqui para gerar flashcards automáticos..."
                 }
                 className="min-h-[200px] text-base md:text-lg border-0 focus:ring-0 resize-none"
               />
@@ -234,7 +206,7 @@ const FlashcardStudyGame: React.FC<FlashcardStudyGameProps> = ({ onBack }) => {
             className="w-full mt-6 py-4 text-lg font-medium"
             size="lg"
           >
-            🎯 Gerar Cartões de Estudo
+            🤖 Gerar Cartões com IA
           </Button>
         </div>
       </div>
@@ -247,7 +219,7 @@ const FlashcardStudyGame: React.FC<FlashcardStudyGameProps> = ({ onBack }) => {
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-6"></div>
           <h2 className="text-white text-2xl md:text-3xl font-medium mb-4">
-            Gerando seus cartões...
+            Claude IA está gerando seus cartões...
           </h2>
           <p className="text-white/80 text-lg">
             Isso pode levar alguns segundos...

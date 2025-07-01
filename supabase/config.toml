@@ -1,1 +1,5 @@
+
 project_id = "neujsmhzacjzluadkdwo"
+
+[functions.claude-chat]
+verify_jwt = false
