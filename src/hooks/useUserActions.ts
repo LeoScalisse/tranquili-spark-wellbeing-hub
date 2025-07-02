@@ -1,68 +1,100 @@
 
-import { useState } from 'react';
 import { User, MoodEntry } from '@/types/user';
-import { calculateLevel, saveUserToStorage, updateUserInStorage } from '@/utils/userUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useUserActions = (
   user: User | null,
   setUser: (user: User | null) => void,
   setIsAuthenticated: (isAuthenticated: boolean) => void
 ) => {
-  const saveUser = (userData: User) => {
-    saveUserToStorage(userData);
-    setUser(userData);
-  };
-
-  const addXP = (amount: number) => {
+  const addXP = async (amount: number) => {
     if (!user) return;
     
     const newXP = user.xp + amount;
-    const { level, xpToNextLevel } = calculateLevel(newXP);
+    const level = Math.floor(newXP / 100) + 1;
+    const xpToNextLevel = (level * 100) - newXP;
     
-    const updatedUser = {
-      ...user,
-      xp: newXP,
-      level,
-      xpToNextLevel
-    };
-    
-    saveUser(updatedUser);
-    updateUserInStorage(user.id, { xp: newXP, level });
+    try {
+      const { error } = await supabase
+        .from('user_progress')
+        .update({ xp: newXP, level })
+        .eq('user_id', user.id);
+
+      if (!error) {
+        const updatedUser = {
+          ...user,
+          xp: newXP,
+          level,
+          xpToNextLevel
+        };
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error('Error updating XP:', error);
+    }
   };
 
-  const addMood = (mood: MoodEntry) => {
+  const addMood = async (mood: MoodEntry) => {
     if (!user) return;
     
-    const updatedUser = {
-      ...user,
-      moods: [...user.moods, mood],
-      lastMoodDate: mood.date
-    };
-    
-    saveUser(updatedUser);
-    updateUserInStorage(user.id, { 
-      moods: updatedUser.moods,
-      lastMoodDate: mood.date
-    });
+    try {
+      const { error: moodError } = await supabase
+        .from('mood_entries')
+        .insert({
+          user_id: user.id,
+          mood: mood.mood,
+          emoji: mood.emoji,
+          color: mood.color,
+          date: mood.date,
+          timestamp: mood.timestamp
+        });
+
+      const { error: progressError } = await supabase
+        .from('user_progress')
+        .update({ last_mood_date: mood.date })
+        .eq('user_id', user.id);
+
+      if (!moodError && !progressError) {
+        const updatedUser = {
+          ...user,
+          moods: [...user.moods, mood],
+          lastMoodDate: mood.date
+        };
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error('Error adding mood:', error);
+    }
   };
 
-  const unlockAchievement = (achievementId: string) => {
+  const unlockAchievement = async (achievementId: string) => {
     if (!user || user.achievements.includes(achievementId)) return;
     
-    const updatedUser = {
-      ...user,
-      achievements: [...user.achievements, achievementId]
-    };
-    
-    saveUser(updatedUser);
-    updateUserInStorage(user.id, { achievements: updatedUser.achievements });
+    try {
+      const { error } = await supabase
+        .from('user_achievements')
+        .insert({
+          user_id: user.id,
+          achievement_id: achievementId
+        });
+
+      if (!error) {
+        const updatedUser = {
+          ...user,
+          achievements: [...user.achievements, achievementId]
+        };
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error('Error unlocking achievement:', error);
+    }
   };
 
-  const updateStreak = () => {
+  const updateStreak = async () => {
     if (!user) return;
     
-    const today = new Date().toDateString();
-    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
     
     let newStreak = user.streak;
     
@@ -74,32 +106,53 @@ export const useUserActions = (
       newStreak = 1;
     }
     
-    const updatedUser = {
-      ...user,
-      streak: newStreak
-    };
-    
-    saveUser(updatedUser);
-    updateUserInStorage(user.id, { streak: newStreak });
+    try {
+      const { error } = await supabase
+        .from('user_progress')
+        .update({ streak: newStreak })
+        .eq('user_id', user.id);
+
+      if (!error) {
+        const updatedUser = {
+          ...user,
+          streak: newStreak
+        };
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error('Error updating streak:', error);
+    }
   };
 
-  const updateGameProgress = (gameId: string, progress: any) => {
+  const updateGameProgress = async (gameId: string, progress: any) => {
     if (!user) return;
     
-    const updatedUser = {
-      ...user,
-      gameProgress: {
-        ...user.gameProgress,
-        [gameId]: progress
+    try {
+      const { error } = await supabase
+        .from('game_progress')
+        .upsert({
+          user_id: user.id,
+          game_id: gameId,
+          progress
+        });
+
+      if (!error) {
+        const updatedUser = {
+          ...user,
+          gameProgress: {
+            ...user.gameProgress,
+            [gameId]: progress
+          }
+        };
+        setUser(updatedUser);
       }
-    };
-    
-    saveUser(updatedUser);
-    updateUserInStorage(user.id, { gameProgress: updatedUser.gameProgress });
+    } catch (error) {
+      console.error('Error updating game progress:', error);
+    }
   };
 
-  const logout = () => {
-    localStorage.removeItem('tranquili-user');
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
     setIsAuthenticated(false);
   };
