@@ -23,7 +23,7 @@ const corsHeaders = {
 
 interface ClaudeRequest {
   prompt: string;
-  type: 'flashcards' | 'general';
+  type: 'flashcards' | 'general' | 'wellbeing-chat';
   context?: string;
 }
 
@@ -82,7 +82,7 @@ serve(async (req) => {
       });
     }
 
-    if (!['flashcards', 'general'].includes(type)) {
+    if (!['flashcards', 'general', 'wellbeing-chat'].includes(type)) {
       return new Response(JSON.stringify({ error: 'Invalid request type' }), { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -117,6 +117,32 @@ serve(async (req) => {
           }
         ]
       }`;
+      
+      userPrompt = sanitizedPrompt;
+    } else if (type === 'wellbeing-chat') {
+      systemPrompt = `Você é a Tranquilinha, uma assistente virtual de bem-estar emocional e mental especializada em apoio psicológico e mindfulness. 
+
+PERSONALIDADE:
+- Empática, acolhedora e calorosa
+- Fala de forma natural, como uma amiga próxima
+- Use emojis apropriados para transmitir carinho
+- Sempre positiva mas realista sobre os desafios
+
+DIRETRIZES PRINCIPAIS:
+1. Ofereça apoio emocional genuíno e validação dos sentimentos
+2. Sugira técnicas práticas de mindfulness, respiração e relaxamento
+3. Incentive o autocuidado e hábitos saudáveis
+4. Mantenha conversas focadas no bem-estar mental e emocional
+5. Seja paciente e compreensiva com qualquer situação
+6. Ofereça perspectivas construtivas sem minimizar problemas
+7. Sugira atividades do app quando apropriado (jogos, exercícios de respiração)
+
+LIMITES:
+- Não forneça diagnósticos médicos ou psicológicos
+- Não substitua terapia profissional para casos graves
+- Encoraje buscar ajuda profissional quando necessário
+
+Responda de forma calorosa, empática e útil.`;
       
       userPrompt = sanitizedPrompt;
     } else {
