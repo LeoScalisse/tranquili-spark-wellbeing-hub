@@ -1,20 +1,8 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
-
-// Input validation functions
-const isValidString = (value: any, maxLength = 5000): boolean => {
-  return typeof value === 'string' && value.trim().length > 0 && value.length <= maxLength;
-};
-
-const sanitizeInput = (input: string): string => {
-  return input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-              .replace(/javascript:/gi, '')
-              .trim();
-};
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -41,57 +29,7 @@ serve(async (req) => {
   }
 
   try {
-    // Get the authorization header
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
-        status: 401, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Create Supabase client to verify user
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          Authorization: authHeader,
-        },
-      },
-    });
-
-    // Verify user authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
-        status: 401, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    const requestBody = await req.json();
-    const { prompt, type, context }: ClaudeRequest = requestBody;
-
-    // Input validation
-    if (!isValidString(prompt, 2000)) {
-      return new Response(JSON.stringify({ error: 'Invalid prompt format' }), { 
-        status: 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    if (!['flashcards', 'general'].includes(type)) {
-      return new Response(JSON.stringify({ error: 'Invalid request type' }), { 
-        status: 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Sanitize inputs
-    const sanitizedPrompt = sanitizeInput(prompt);
-    const sanitizedContext = context ? sanitizeInput(context) : undefined;
+    const { prompt, type, context }: ClaudeRequest = await req.json();
 
     let systemPrompt = '';
     let userPrompt = '';
@@ -118,10 +56,10 @@ serve(async (req) => {
         ]
       }`;
       
-      userPrompt = sanitizedPrompt;
+      userPrompt = prompt;
     } else {
       systemPrompt = 'Você é um assistente útil que responde perguntas de forma clara e educativa em português.';
-      userPrompt = sanitizedPrompt;
+      userPrompt = prompt;
     }
 
     console.log('Sending request to Claude API...');

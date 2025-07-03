@@ -27,32 +27,17 @@ const AuthPage = () => {
   const navigate = useNavigate();
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return email.includes('@') && email.includes('.');
   };
 
   const validateForm = () => {
-    // Sanitize inputs
-    const sanitizedEmail = formData.email.trim().toLowerCase();
-    const sanitizedName = formData.name.trim();
-
-    if (!validateEmail(sanitizedEmail)) {
+    if (!validateEmail(formData.email)) {
       toast.error('Por favor, insira um e-mail válido');
       return false;
     }
     
-    if (formData.password.length < 8) {
-      toast.error('A senha deve ter pelo menos 8 caracteres');
-      return false;
-    }
-    
-    // Check password strength
-    const hasUpperCase = /[A-Z]/.test(formData.password);
-    const hasLowerCase = /[a-z]/.test(formData.password);
-    const hasNumbers = /\d/.test(formData.password);
-    
-    if (!isLogin && (!hasUpperCase || !hasLowerCase || !hasNumbers)) {
-      toast.error('A senha deve conter pelo menos uma letra maiúscula, uma minúscula e um número');
+    if (formData.password.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres');
       return false;
     }
     
@@ -61,17 +46,10 @@ const AuthPage = () => {
       return false;
     }
     
-    if (!isLogin && sanitizedName.length < 2) {
+    if (!isLogin && formData.name.trim().length < 2) {
       toast.error('O nome deve ter pelo menos 2 caracteres');
       return false;
     }
-    
-    // Update form data with sanitized values
-    setFormData(prev => ({
-      ...prev,
-      email: sanitizedEmail,
-      name: sanitizedName
-    }));
     
     return true;
   };
