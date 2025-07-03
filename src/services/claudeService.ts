@@ -78,6 +78,33 @@ class ClaudeService {
       return 'Erro ao conectar com a Claude API. Tente novamente.';
     }
   }
+
+  async chatWithTranquilinha(message: string): Promise<string> {
+    try {
+      console.log('Chatting with Tranquilinha:', message);
+      
+      const { data, error } = await supabase.functions.invoke('claude-chat', {
+        body: {
+          prompt: message,
+          type: 'wellbeing-chat'
+        }
+      });
+
+      if (error) {
+        console.error('Supabase function error:', error);
+        // Não jogue erro aqui, retorne uma resposta amigável
+        return 'Parece que estou com dificuldades para me conectar agora. Que tal tentarmos uma técnica de respiração enquanto isso? Inspire por 4 segundos, segure por 4, expire por 6. 🌸';
+      }
+
+      console.log('Tranquilinha response:', data);
+
+      return data?.response || 'Desculpe, não consegui processar sua mensagem. Como posso te ajudar de outra forma? 😊';
+
+    } catch (error) {
+      console.error('Error chatting with Tranquilinha:', error);
+      return 'Parece que estou com dificuldades para me conectar agora. Que tal tentarmos uma técnica de respiração enquanto isso? Inspire por 4 segundos, segure por 4, expire por 6. 🌸';
+    }
+  }
 }
 
 export const claudeService = new ClaudeService();

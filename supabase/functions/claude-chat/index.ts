@@ -23,7 +23,7 @@ const corsHeaders = {
 
 interface ClaudeRequest {
   prompt: string;
-  type: 'flashcards' | 'general';
+  type: 'flashcards' | 'general' | 'wellbeing-chat';
   context?: string;
 }
 
@@ -41,10 +41,28 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting claude-chat function...');
+    
+    // Verify Anthropic API key
+    if (!anthropicApiKey) {
+      console.error('ANTHROPIC_API_KEY not found');
+      return new Response(JSON.stringify({ 
+        error: 'API key not configured',
+        response: 'Desculpe, estou com problemas de configuração. Que tal tentarmos uma técnica de respiração? Inspire por 4 segundos, segure por 4, expire por 6. 🌸'
+      }), { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // Get the authorization header
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+      console.error('No authorization header');
+      return new Response(JSON.stringify({ 
+        error: 'Unauthorized',
+        response: 'Parece que você não está autenticado. Faça login e tente novamente! 😊'
+      }), { 
         status: 401, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -65,7 +83,11 @@ serve(async (req) => {
     // Verify user authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+      console.error('Auth error:', authError);
+      return new Response(JSON.stringify({ 
+        error: 'Unauthorized',
+        response: 'Parece que sua sessão expirou. Faça login novamente! 😊'
+      }), { 
         status: 401, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -74,16 +96,24 @@ serve(async (req) => {
     const requestBody = await req.json();
     const { prompt, type, context }: ClaudeRequest = requestBody;
 
+    console.log('Processing request:', { type, promptLength: prompt?.length });
+
     // Input validation
     if (!isValidString(prompt, 2000)) {
-      return new Response(JSON.stringify({ error: 'Invalid prompt format' }), { 
+      return new Response(JSON.stringify({ 
+        error: 'Invalid prompt format',
+        response: 'Sua mensagem parece estar com problemas. Pode tentar novamente de forma mais simples? 😊'
+      }), { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    if (!['flashcards', 'general'].includes(type)) {
-      return new Response(JSON.stringify({ error: 'Invalid request type' }), { 
+    if (!['flashcards', 'general', 'wellbeing-chat'].includes(type)) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid request type',
+        response: 'Tipo de solicitação inválida. Como posso te ajudar de outra forma? 😊'
+      }), { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -119,6 +149,32 @@ serve(async (req) => {
       }`;
       
       userPrompt = sanitizedPrompt;
+    } else if (type === 'wellbeing-chat') {
+      systemPrompt = `Você é a Tranquilinha, uma assistente virtual de bem-estar emocional e mental especializada em apoio psicológico e mindfulness. 
+
+PERSONALIDADE:
+- Empática, acolhedora e calorosa
+- Fala de forma natural, como uma amiga próxima
+- Use emojis apropriados para transmitir carinho (mas não exagere)
+- Sempre positiva mas realista sobre os desafios
+
+DIRETRIZES PRINCIPAIS:
+1. Ofereça apoio emocional genuíno e validação dos sentimentos
+2. Sugira técnicas práticas de mindfulness, respiração e relaxamento
+3. Incentive o autocuidado e hábitos saudáveis
+4. Mantenha conversas focadas no bem-estar mental e emocional
+5. Seja paciente e compreensiva com qualquer situação
+6. Ofereça perspectivas construtivas sem minimizar problemas
+7. Dê respostas concisas mas úteis
+
+LIMITES:
+- Não forneça diagnósticos médicos ou psicológicos
+- Não substitua terapia profissional para casos graves
+- Encoraje buscar ajuda profissional quando necessário
+
+Responda de forma calorosa, empática e útil.`;
+      
+      userPrompt = sanitizedPrompt;
     } else {
       systemPrompt = 'Você é um assistente útil que responde perguntas de forma clara e educativa em português.';
       userPrompt = sanitizedPrompt;
@@ -149,11 +205,23 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Claude API error:', response.status, errorText);
-      throw new Error(`Claude API error: ${response.status} - ${errorText}`);
+      
+      // Return a friendly fallback message
+      const fallbackMessage = type === 'wellbeing-chat' 
+        ? 'Parece que estou com dificuldades para me conectar agora. Que tal tentarmos uma técnica de respiração enquanto isso? Inspire por 4 segundos, segure por 4, expire por 6. 🌸'
+        : 'Desculpe, estou com dificuldades de conexão. Tente novamente em alguns instantes.';
+      
+      return new Response(JSON.stringify({ 
+        response: fallbackMessage,
+        error: `Claude API error: ${response.status}`
+      }), {
+        status: 200, // Return 200 so the frontend can handle gracefully
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const data = await response.json();
-    console.log('Claude API response received');
+    console.log('Claude API response received successfully');
 
     let responseContent = data.content[0].text;
 
@@ -196,16 +264,15 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in claude-chat function:', error);
+    
+    // Return a friendly error message
+    const fallbackMessage = 'Parece que estou com dificuldades técnicas. Que tal tentarmos uma técnica de respiração? Inspire por 4 segundos, segure por 4, expire por 6. 🌸';
+    
     return new Response(JSON.stringify({ 
-      error: error.message,
-      flashcards: [
-        {
-          front: "Erro na conexão",
-          back: "Verifique sua conexão e tente novamente."
-        }
-      ]
+      response: fallbackMessage,
+      error: error.message
     }), {
-      status: 500,
+      status: 200, // Return 200 so the frontend handles gracefully
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

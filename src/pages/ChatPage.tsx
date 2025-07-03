@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Send, Mic, Volume2, VolumeX } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { useAudio } from '@/contexts/AudioContext';
+import { claudeService } from '@/services/claudeService';
 import { toast } from 'sonner';
 interface Message {
   id: string;
@@ -60,42 +61,13 @@ const ChatPage = () => {
     };
   }, [isTyping, startTypingSound, stopTypingSound]);
   const generateAIResponse = async (userMessage: string): Promise<string> => {
-    // Simulate typing delay
-    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
-    const lowercaseMessage = userMessage.toLowerCase();
-
-    // Simple response system based on keywords
-    if (lowercaseMessage.includes('ansiedade') || lowercaseMessage.includes('ansioso')) {
-      return "Entendo que você está sentindo ansiedade. É uma experiência muito comum e você não está sozinho(a). Vamos tentar uma técnica de respiração: inspire por 4 segundos, segure por 4, expire por 6. Repita isso algumas vezes. Que tal também pensarmos no que pode estar causando essa ansiedade? 🌸";
+    try {
+      return await claudeService.chatWithTranquilinha(userMessage);
+    } catch (error) {
+      console.error('Erro ao chamar Claude API:', error);
+      // Fallback para respostas locais em caso de erro
+      return 'Desculpe, estou com dificuldades para me conectar agora. Como posso te ajudar de outra forma? 😊';
     }
-    if (lowercaseMessage.includes('triste') || lowercaseMessage.includes('tristeza')) {
-      return "Sinto que você está passando por um momento difícil. A tristeza é uma emoção válida e importante. Permita-se senti-la, mas lembre-se de que é temporária. Você gostaria de conversar sobre o que está te deixando triste? Às vezes, apenas colocar em palavras já pode ajudar. 💙";
-    }
-    if (lowercaseMessage.includes('feliz') || lowercaseMessage.includes('alegria') || lowercaseMessage.includes('bem')) {
-      return "Que alegria saber que você está bem! 😊 É maravilhoso quando conseguimos reconhecer e celebrar esses momentos positivos. O que está te deixando feliz hoje? Compartilhar alegria faz com que ela se multiplique! ✨";
-    }
-    if (lowercaseMessage.includes('stress') || lowercaseMessage.includes('estresse')) {
-      return "O estresse pode ser muito desafiador. Primeiro, respire fundo comigo. Agora, vamos pensar em pequenas coisas que você pode fazer para aliviar essa tensão: uma caminhada de 5 minutos, ouvir sua música favorita, ou até mesmo alongar o corpo. O que soa mais atrativo para você agora? 🌿";
-    }
-    if (lowercaseMessage.includes('trabalho') || lowercaseMessage.includes('job')) {
-      return "Questões profissionais podem ser uma grande fonte de estresse. Lembre-se de que você é muito mais do que seu trabalho. Como você tem cuidado do seu bem-estar durante a rotina profissional? É importante estabelecer limites saudáveis. 💼";
-    }
-    if (lowercaseMessage.includes('relacionamento') || lowercaseMessage.includes('família')) {
-      return "Os relacionamentos são fundamentais para nosso bem-estar, mas também podem ser complexos. Comunicação aberta e honesta é sempre um bom caminho. Como você tem se sentido em relação aos seus relacionamentos? 💕";
-    }
-    if (lowercaseMessage.includes('sono') || lowercaseMessage.includes('dormir')) {
-      return "O sono é fundamental para nossa saúde mental e física. Você tem mantido uma rotina de sono regular? Algumas dicas: evite telas 1 hora antes de dormir, mantenha o quarto escuro e fresco, e tente relaxar com uma leitura leve ou meditação. 😴";
-    }
-    if (lowercaseMessage.includes('exercício') || lowercaseMessage.includes('atividade física')) {
-      return "A atividade física é um dos melhores remédios naturais para nossa mente! Não precisa ser nada intenso - uma caminhada de 10 minutos já faz diferença. Que tipo de movimento você mais gosta de fazer? 🏃‍♀️";
-    }
-    if (lowercaseMessage.includes('obrigado') || lowercaseMessage.includes('obrigada')) {
-      return "Por nada! 😊 Fico muito feliz em poder te ajudar. Lembre-se: você é forte, capaz e merece todo o cuidado e carinho do mundo. Estou sempre aqui quando precisar! 💚";
-    }
-
-    // Default responses
-    const defaultResponses = ["Interessante perspectiva! Como você se sente em relação a isso? Às vezes, explorar nossos sentimentos pode nos dar insights valiosos sobre nós mesmos. 🤔", "Obrigada por compartilhar isso comigo. Cada experiência é única e válida. O que você acha que poderia te ajudar nesta situação? 💭", "Entendo. Você gostaria de explorar esse sentimento um pouco mais? Às vezes, quando conversamos sobre nossos pensamentos, encontramos clareza. 🌟", "Essa é uma reflexão importante. Como você tem cuidado de si mesmo(a) ultimamente? Lembre-se de que o autocuidado não é egoísmo, é necessidade. 🌸"];
-    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
   };
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
