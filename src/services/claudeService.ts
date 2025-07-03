@@ -92,7 +92,8 @@ class ClaudeService {
 
       if (error) {
         console.error('Supabase function error:', error);
-        throw new Error(`Erro na função: ${error.message}`);
+        // Não jogue erro aqui, retorne uma resposta amigável
+        return 'Parece que estou com dificuldades para me conectar agora. Que tal tentarmos uma técnica de respiração enquanto isso? Inspire por 4 segundos, segure por 4, expire por 6. 🌸';
       }
 
       console.log('Tranquilinha response:', data);
