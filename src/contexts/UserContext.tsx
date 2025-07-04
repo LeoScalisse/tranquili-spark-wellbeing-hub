@@ -129,7 +129,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       ]) as any;
 
       const { data: profile, error: profileError } = profileResult;
-      const { data: progress, error: progressError } = progressResult;
+      let { data: progress, error: progressError } = progressResult;
       const { data: achievements, error: achievementsError } = achievementsResult;
       const { data: moods, error: moodsError } = moodsResult;
 
