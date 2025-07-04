@@ -8,25 +8,34 @@ export const useAuth = (
 ) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      console.log('🔐 Tentando fazer login para:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        console.error('Login error:', error);
+        console.error('❌ Erro no login:', error.message);
         return false;
       }
 
-      return !!data.user;
+      if (data.user) {
+        console.log('✅ Login bem-sucedido para:', data.user.email);
+        return true;
+      }
+
+      return false;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ Erro inesperado no login:', error);
       return false;
     }
   };
 
   const register = async (name: string, email: string, password: string): Promise<boolean> => {
     try {
+      console.log('📝 Tentando registrar usuário:', email);
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -38,13 +47,18 @@ export const useAuth = (
       });
 
       if (error) {
-        console.error('Registration error:', error);
+        console.error('❌ Erro no registro:', error.message);
         return false;
       }
 
-      return !!data.user;
+      if (data.user) {
+        console.log('✅ Registro bem-sucedido para:', data.user.email);
+        return true;
+      }
+
+      return false;
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('❌ Erro inesperado no registro:', error);
       return false;
     }
   };
