@@ -4,6 +4,7 @@ import { User, UserContextType } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserActions } from '@/hooks/useUserActions';
+import { calculateLevelFromXP } from '@/utils/xpSystem';
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -170,15 +171,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       if (profile && progress) {
-        const xpToNextLevel = Math.max(0, (progress.level * 100) - progress.xp);
+        // Usar o novo sistema de XP progressivo
+        const { level, currentLevelXP, xpToNextLevel } = calculateLevelFromXP(progress.xp || 0);
         
         const userData: User = {
           id: profile.id,
           name: profile.name || 'Usuário',
           email: profile.email || '',
-          level: progress.level || 1,
+          level,
           xp: progress.xp || 0,
           xpToNextLevel,
+          currentLevelXP,
           streak: progress.streak || 0,
           lastMoodDate: progress.last_mood_date,
           achievements: achievements?.map(a => a.achievement_id) || [],

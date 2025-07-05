@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Sun, Moon, Sparkles, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { calculateXPRequirement } from '@/utils/xpSystem';
 
 const Header = () => {
   const { user, logout } = useUser();
@@ -53,7 +54,8 @@ const Header = () => {
 
   if (!user) return null;
 
-  const xpPercentage = ((user.xp % 100) / 100) * 100;
+  const xpRequired = calculateXPRequirement(user.level);
+  const xpPercentage = (user.currentLevelXP / xpRequired) * 100;
 
   return (
     <header className="w-full max-w-6xl mx-auto">
@@ -74,7 +76,7 @@ const Header = () => {
               <Progress value={xpPercentage} className="h-2" />
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {user.xpToNextLevel} XP restante
+              {user.currentLevelXP}/{xpRequired} XP
             </p>
           </div>
           

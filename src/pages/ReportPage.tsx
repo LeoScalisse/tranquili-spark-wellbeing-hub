@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Calendar, BarChart3, TrendingUp } from 'lucide-react';
+import LevelMedals from '@/components/LevelMedals';
+
 const ReportPage = () => {
   const {
     user
@@ -16,6 +18,7 @@ const ReportPage = () => {
   const navigate = useNavigate();
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
   const getCurrentMonthDays = () => {
     const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
     const firstDay = new Date(selectedYear, selectedMonth, 1).getDay();
@@ -24,11 +27,13 @@ const ReportPage = () => {
       firstDay
     };
   };
+
   const getMoodForDate = (day: number) => {
     if (!user) return null;
     const dateString = new Date(selectedYear, selectedMonth, day).toDateString();
     return user.moods.find(mood => mood.date === dateString);
   };
+
   const getMoodStats = () => {
     if (!user) return {
       total: 0,
@@ -55,21 +60,26 @@ const ReportPage = () => {
       distribution
     };
   };
-  const {
-    daysInMonth,
-    firstDay
-  } = getCurrentMonthDays();
+
+  const { daysInMonth, firstDay } = getCurrentMonthDays();
   const stats = getMoodStats();
   const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-  return <div className="min-h-screen p-4">
+
+  return (
+    <div className="min-h-screen p-4">
       <div className="max-w-4xl mx-auto space-y-6">
         <Card className="glassmorphism">
           <CardHeader className="flex-row items-center space-y-0 pb-4">
-            <Button variant="ghost" size="icon" onClick={() => {
-            playClickSound();
-            navigate('/');
-          }} className="mr-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                playClickSound();
+                navigate('/');
+              }}
+              className="mr-4"
+            >
               <ArrowLeft className="h-4 w-4" />
             </Button>
             
@@ -79,11 +89,13 @@ const ReportPage = () => {
                 Relatório de Humor
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Acompanhe sua jornada emocional
+                Acompanhe sua jornada emocional e conquistas
               </p>
             </div>
           </CardHeader>
         </Card>
+
+        <LevelMedals />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
@@ -209,6 +221,8 @@ const ReportPage = () => {
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default ReportPage;

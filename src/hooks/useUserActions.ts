@@ -1,33 +1,43 @@
 
 import { User, MoodEntry } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
+import { calculateLevelFromXP, getXPForAction } from '@/utils/xpSystem';
 
 export const useUserActions = (
   user: User | null,
   setUser: (user: User | null) => void,
   setIsAuthenticated: (isAuthenticated: boolean) => void
 ) => {
-  const addXP = async (amount: number) => {
+  const addXP = async (amount: number, action?: string) => {
     if (!user) return;
     
-    const newXP = user.xp + amount;
-    const level = Math.floor(newXP / 100) + 1;
-    const xpToNextLevel = (level * 100) - newXP;
+    // Calcular XP baseado no nível atual e ação
+    const xpToAdd = action ? getXPForAction(action, user.level) : amount;
+    const newTotalXP = user.xp + xpToAdd;
+    
+    // Calcular novo nível usando o sistema progressivo
+    const { level, currentLevelXP, xpToNextLevel } = calculateLevelFromXP(newTotalXP);
     
     try {
       const { error } = await supabase
         .from('user_progress')
-        .update({ xp: newXP, level })
+        .update({ xp: newTotalXP, level })
         .eq('user_id', user.id);
 
       if (!error) {
         const updatedUser = {
           ...user,
-          xp: newXP,
+          xp: newTotalXP,
           level,
+          currentLevelXP,
           xpToNextLevel
         };
         setUser(updatedUser);
+        
+        // Se subiu de nível, log especial
+        if (level > user.level) {
+          console.log(`🎉 Nível UP! Novo nível: ${level}`);
+        }
       }
     } catch (error) {
       console.error('Error updating XP:', error);
@@ -61,6 +71,9 @@ export const useUserActions = (
           lastMoodDate: mood.date
         };
         setUser(updatedUser);
+        
+        // Adicionar XP por registrar humor
+        await addXP(0, 'mood_entry');
       }
     } catch (error) {
       console.error('Error adding mood:', error);

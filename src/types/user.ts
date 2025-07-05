@@ -6,6 +6,7 @@ export interface User {
   level: number;
   xp: number;
   xpToNextLevel: number;
+  currentLevelXP: number;
   streak: number;
   lastMoodDate?: string;
   achievements: string[];
