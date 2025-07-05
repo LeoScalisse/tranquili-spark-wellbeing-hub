@@ -3,6 +3,7 @@
   "name": "TranquiliMais - Hub de Bem-estar",
   "short_name": "TranquiliMais",
   "description": "Seu companheiro digital para bem-estar mental e tranquilidade",
+  "version": "2.1.0",
   "start_url": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],

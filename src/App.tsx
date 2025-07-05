@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -20,7 +19,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import GlobalAchievementWrapper from "./components/GlobalAchievementWrapper";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
-import PWAStatus from "./components/PWAStatus";
+import PWAUpdateNotification from "./components/PWAUpdateNotification";
+import PWAStatusIndicator from "./components/PWAStatusIndicator";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +36,8 @@ const App = () => {
                   <Toaster />
                   <Sonner />
                   <GlobalAchievementWrapper />
-                  <PWAStatus />
+                  <PWAStatusIndicator />
+                  <PWAUpdateNotification />
                   <PWAInstallPrompt />
                   <Routes>
                     <Route path="/auth" element={<AuthPage />} />
