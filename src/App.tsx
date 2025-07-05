@@ -19,6 +19,8 @@ import TranquiliGamesPage from "./pages/TranquiliGamesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import GlobalAchievementWrapper from "./components/GlobalAchievementWrapper";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import PWAStatus from "./components/PWAStatus";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +36,8 @@ const App = () => {
                   <Toaster />
                   <Sonner />
                   <GlobalAchievementWrapper />
+                  <PWAStatus />
+                  <PWAInstallPrompt />
                   <Routes>
                     <Route path="/auth" element={<AuthPage />} />
                     <Route path="/" element={

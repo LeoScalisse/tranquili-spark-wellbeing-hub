@@ -115,6 +115,37 @@
 
   body {
     @apply bg-background text-foreground transition-colors duration-300;
+    /* Prevent bounce scrolling on iOS */
+    overscroll-behavior: none;
+    /* Improve font rendering on mobile */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent text size adjust on mobile */
+    -webkit-text-size-adjust: 100%;
+    /* Improve touch performance */
+    touch-action: manipulation;
+  }
+
+  /* Prevent zoom on form inputs on iOS */
+  input, textarea, select {
+    font-size: 16px;
+  }
+
+  /* Safe area for notched devices */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-area-right {
+    padding-right: env(safe-area-inset-right);
   }
 
   /* Theme-specific backgrounds */
@@ -144,6 +175,8 @@
 
   .mood-option {
     @apply transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-pointer;
+    /* Improve touch feedback */
+    -webkit-tap-highlight-color: transparent;
   }
 
   .mood-option.selected {
@@ -167,6 +200,30 @@
   .floating-particles:nth-child(3n) {
     animation-delay: -4s;
     animation-duration: 10s;
+  }
+
+  /* Mobile-optimized components */
+  .mobile-container {
+    @apply px-4 py-6 max-w-sm mx-auto;
+  }
+
+  .mobile-safe {
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  /* Better button touch targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Scrollable areas with momentum */
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
 
   /* Animações de conquista aprimoradas */
@@ -295,6 +352,11 @@
     }
   }
 
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   .sparkle {
     position: absolute;
     width: 10px;
@@ -336,6 +398,10 @@
     animation: text-reveal 0.8s ease-out 1s both;
   }
 
+  .animate-fade-in {
+    animation: fade-in 0.6s ease-out;
+  }
+
   /* Mobile-specific animations */
   @media (max-width: 768px) {
     .animate-float-particles {
@@ -353,6 +419,12 @@
     .animate-icon-celebration {
       animation: icon-celebration 1.5s ease-in-out infinite;
     }
+
+    /* Optimize for mobile performance */
+    * {
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+    }
   }
 }
 
@@ -367,5 +439,55 @@
 
   .text-shadow-lg {
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Mobile-first responsive utilities */
+  .mobile-grid {
+    @apply grid grid-cols-1 gap-4;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-grid {
+      @apply grid-cols-2;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .mobile-grid {
+      @apply grid-cols-3;
+    }
+  }
+
+  /* Touch-friendly spacing */
+  .touch-spacing {
+    @apply space-y-4;
+  }
+
+  @media (min-width: 768px) {
+    .touch-spacing {
+      @apply space-y-6;
+    }
+  }
+}
+
+/* PWA specific styles */
+@media (display-mode: standalone) {
+  body {
+    /* App-like feel when installed */
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  /* Allow text selection in specific areas */
+  input, textarea, [contenteditable] {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+}
+
+/* High-DPI displays optimization */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .glassmorphism {
+    backdrop-filter: blur(20px);
   }
 }
