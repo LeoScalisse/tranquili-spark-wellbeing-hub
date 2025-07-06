@@ -130,7 +130,7 @@ const PWAInstallPrompt = () => {
             <Smartphone className="h-6 w-6 text-accent" />
           </div>
           <div>
-            <DialogTitle className="text-xl">Instalar TranquiliMais</DialogTitle>
+            <DialogTitle className="text-xl">Instalar Tranquili+</DialogTitle>
             <DialogDescription>
               Adicione à sua tela inicial para acesso rápido
             </DialogDescription>
@@ -193,7 +193,7 @@ const PWAInstallPrompt = () => {
             <Monitor className="h-6 w-6 text-accent" />
           </div>
           <div>
-            <DialogTitle className="text-xl">Instalar TranquiliMais</DialogTitle>
+            <DialogTitle className="text-xl">Instalar Tranquili+</DialogTitle>
             <DialogDescription>
               Transforme em um app nativo com um clique
             </DialogDescription>
@@ -258,7 +258,7 @@ const PWAInstallPrompt = () => {
                     {isIOS ? <Smartphone className="h-5 w-5 text-accent" /> : <Monitor className="h-5 w-5 text-accent" />}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-sm">Instalar TranquiliMais</h4>
+                    <h4 className="font-semibold text-sm">Instalar Tranquili+</h4>
                     <p className="text-xs text-muted-foreground">
                       Toque para ver como instalar
                     </p>
