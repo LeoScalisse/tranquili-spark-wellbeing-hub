@@ -12,47 +12,83 @@ export interface FlashcardsResponse {
 
 export interface ClaudeResponse {
   response: string;
+  error?: string;
+  debug?: any;
 }
 
 class ClaudeService {
+  private async callClaudeFunction(body: any, retries = 2): Promise<any> {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        console.log(`🚀 Chamando Claude API - Tentativa ${attempt}/${retries}`);
+        
+        const { data, error } = await supabase.functions.invoke('claude-chat', {
+          body,
+        });
+
+        if (error) {
+          console.error(`❌ Erro Supabase (tentativa ${attempt}):`, error);
+          
+          // Se é erro de autenticação, não tentar novamente
+          if (error.message?.includes('JWT') || error.message?.includes('unauthorized')) {
+            throw new Error('Sessão expirada. Faça login novamente.');
+          }
+          
+          // Se é a última tentativa, lançar erro
+          if (attempt === retries) {
+            throw new Error(`Erro de conexão: ${error.message}`);
+          }
+          
+          // Aguardar antes da próxima tentativa
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          continue;
+        }
+
+        console.log('✅ Resposta recebida com sucesso');
+        return data;
+
+      } catch (error) {
+        console.error(`🚨 Erro na tentativa ${attempt}:`, error);
+        
+        if (attempt === retries) {
+          throw error;
+        }
+        
+        // Aguardar antes da próxima tentativa
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      }
+    }
+  }
+
   async generateFlashcards(topic: string): Promise<Flashcard[]> {
     try {
-      console.log('Generating flashcards for topic:', topic);
+      console.log('📚 Gerando flashcards para:', topic);
       
-      const { data, error } = await supabase.functions.invoke('claude-chat', {
-        body: {
-          prompt: topic,
-          type: 'flashcards'
-        }
+      const data = await this.callClaudeFunction({
+        prompt: topic,
+        type: 'flashcards'
       });
 
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw new Error(`Erro na função: ${error.message}`);
-      }
-
-      console.log('Claude API response:', data);
-
       if (data?.flashcards && Array.isArray(data.flashcards)) {
+        console.log(`✅ ${data.flashcards.length} flashcards gerados`);
         return data.flashcards;
       }
 
-      // Fallback em caso de resposta inválida
+      console.warn('⚠️ Resposta inválida, usando fallback');
       return [
         {
           front: "Erro na geração",
-          back: "Não foi possível gerar flashcards. Tente novamente."
+          back: "Não foi possível gerar flashcards. Verifique sua conexão e tente novamente."
         }
       ];
 
     } catch (error) {
-      console.error('Error generating flashcards:', error);
+      console.error('❌ Erro ao gerar flashcards:', error);
       
-      // Fallback para demonstração
       return [
         {
           front: "Erro de conexão",
-          back: "Verifique sua conexão com a internet e tente novamente."
+          back: error.message || "Verifique sua conexão com a internet e tente novamente."
         }
       ];
     }
@@ -60,49 +96,57 @@ class ClaudeService {
 
   async chatWithClaude(message: string): Promise<string> {
     try {
-      const { data, error } = await supabase.functions.invoke('claude-chat', {
-        body: {
-          prompt: message,
-          type: 'general'
-        }
+      console.log('💬 Chat geral com Claude:', message.substring(0, 50) + '...');
+      
+      const data = await this.callClaudeFunction({
+        prompt: message,
+        type: 'general'
       });
-
-      if (error) {
-        throw new Error(`Erro na função: ${error.message}`);
-      }
 
       return data?.response || 'Desculpe, não consegui processar sua mensagem.';
 
     } catch (error) {
-      console.error('Error chatting with Claude:', error);
-      return 'Erro ao conectar com a Claude API. Tente novamente.';
+      console.error('❌ Erro no chat geral:', error);
+      return error.message || 'Erro ao conectar com a Claude API. Tente novamente.';
     }
   }
 
   async chatWithTranquilinha(message: string): Promise<string> {
     try {
-      console.log('Chatting with Tranquilinha:', message);
+      console.log('🌸 Conversando com Tranquilinha:', message.substring(0, 50) + '...');
       
-      const { data, error } = await supabase.functions.invoke('claude-chat', {
-        body: {
-          prompt: message,
-          type: 'wellbeing-chat'
-        }
+      const data = await this.callClaudeFunction({
+        prompt: message,
+        type: 'wellbeing-chat'
       });
 
-      if (error) {
-        console.error('Supabase function error:', error);
-        // Não jogue erro aqui, retorne uma resposta amigável
-        return 'Parece que estou com dificuldades para me conectar agora. Que tal tentarmos uma técnica de respiração enquanto isso? Inspire por 4 segundos, segure por 4, expire por 6. 🌸';
+      if (data?.response) {
+        console.log('✅ Tranquilinha respondeu com sucesso');
+        return data.response;
       }
 
-      console.log('Tranquilinha response:', data);
+      // Se há erro mas ainda uma resposta, usar a resposta
+      if (data?.error && data?.response) {
+        console.warn('⚠️ Resposta com erro:', data.error);
+        return data.response;
+      }
 
-      return data?.response || 'Desculpe, não consegui processar sua mensagem. Como posso te ajudar de outra forma? 😊';
+      console.warn('⚠️ Resposta vazia, usando fallback');
+      return 'Oi! Parece que estou com dificuldades agora, mas estou aqui para você. Que tal compartilhar como está se sentindo? 😊';
 
     } catch (error) {
-      console.error('Error chatting with Tranquilinha:', error);
-      return 'Parece que estou com dificuldades para me conectar agora. Que tal tentarmos uma técnica de respiração enquanto isso? Inspire por 4 segundos, segure por 4, expire por 6. 🌸';
+      console.error('❌ Erro ao conversar com Tranquilinha:', error);
+      
+      // Mensagens de erro mais amigáveis baseadas no tipo de erro
+      if (error.message?.includes('expirada') || error.message?.includes('login')) {
+        return 'Parece que sua sessão expirou. Faça login novamente para continuarmos nossa conversa! 😊';
+      }
+      
+      if (error.message?.includes('conexão') || error.message?.includes('network')) {
+        return 'Estou com dificuldades de conexão agora. Que tal tentarmos uma respiração consciente enquanto isso? Inspire por 4 segundos, segure por 4, expire por 6. 🌸';
+      }
+      
+      return 'Oi! Estou passando por algumas dificuldades técnicas, mas logo estarei de volta! Enquanto isso, lembre-se: você é mais forte do que imagina. 💪✨';
     }
   }
 }
