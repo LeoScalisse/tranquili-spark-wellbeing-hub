@@ -49,8 +49,8 @@ export const useAudioSystem = (): AudioSystemState & AudioSystemActions => {
     try {
       addDebug('Tentando inicializar Tone.js...');
       
-      // Verificar se já está rodando
-      if (Tone.context.state === 'running') {
+      // Verificar se já está rodando - corrigir verificação de estado
+      if (Tone.context.state !== 'closed') {
         addDebug('Tone.js já está ativo');
         return true;
       }
@@ -58,7 +58,8 @@ export const useAudioSystem = (): AudioSystemState & AudioSystemActions => {
       // Inicializar Tone.js
       await Tone.start();
       
-      if (Tone.context.state === 'running') {
+      // Verificar se a inicialização foi bem-sucedida
+      if (Tone.context.state !== 'closed') {
         addDebug('✅ Tone.js inicializado com sucesso');
         return true;
       } else {
@@ -204,12 +205,15 @@ export const useAudioSystem = (): AudioSystemState & AudioSystemActions => {
     addDebug('🔄 Resetando sistema de áudio...');
     
     try {
-      // Parar Tone.js se estiver rodando
+      // Parar Tone.js se estiver rodando - corrigir método de fechamento
       if (Tone.context.state !== 'closed') {
-        await Tone.context.close();
+        // Tone.js não tem método close(), então vamos apenas parar tudo
+        Tone.Transport.stop();
+        Tone.Transport.cancel();
+        addDebug('Tone.js parado');
       }
     } catch (error) {
-      addDebug(`Erro ao fechar Tone.js: ${error.message}`);
+      addDebug(`Erro ao parar Tone.js: ${error.message}`);
     }
 
     isInitializedRef.current = false;
@@ -238,7 +242,7 @@ export const useAudioSystem = (): AudioSystemState & AudioSystemActions => {
       
       switch (state.method) {
         case 'tone':
-          if (Tone.context.state === 'running') {
+          if (Tone.context.state !== 'closed') {
             const osc = new Tone.Oscillator(440, 'sine').toDestination();
             osc.start();
             osc.stop('+0.1');
