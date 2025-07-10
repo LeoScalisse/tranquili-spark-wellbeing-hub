@@ -45,17 +45,9 @@ export const useSecureAuth = () => {
 
       console.log('🔐 Tentativa de login seguro para:', cleanEmail);
       
-      // Generate session fingerprint
-      const fingerprint = generateSessionFingerprint();
-      
       const { data, error } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
-        password,
-        options: {
-          data: {
-            fingerprint
-          }
-        }
+        password
       });
 
       if (error) {
