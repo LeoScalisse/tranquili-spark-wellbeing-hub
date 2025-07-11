@@ -7,18 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Eye, EyeOff, Loader2, Shield } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useSecureAuth } from '@/hooks/useSecureAuth';
-import { validateEmail, validatePassword, validateName } from '@/utils/securityUtils';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showTransition, setShowTransition] = useState(false);
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -28,99 +24,104 @@ const AuthPage = () => {
 
   const { login, register } = useUser();
   const { playClickSound } = useAudio();
-  const { secureLogin, secureRegister, isLoading: authLoading } = useSecureAuth();
   const navigate = useNavigate();
 
-  const validateForm = (): boolean => {
-    const errors: Record<string, string> = {};
-    
-    // Email validation
-    if (!validateEmail(formData.email.trim())) {
-      errors.email = 'Por favor, insira um e-mail válido';
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateForm = () => {
+    // Sanitize inputs
+    const sanitizedEmail = formData.email.trim().toLowerCase();
+    const sanitizedName = formData.name.trim();
+
+    if (!validateEmail(sanitizedEmail)) {
+      toast.error('Por favor, insira um e-mail válido');
+      return false;
     }
     
-    // Password validation
-    if (!isLogin) {
-      const passwordValidation = validatePassword(formData.password);
-      if (!passwordValidation.isValid) {
-        errors.password = passwordValidation.errors[0];
-      }
-      
-      if (formData.password !== formData.confirmPassword) {
-        errors.confirmPassword = 'As senhas não coincidem';
-      }
-      
-      // Name validation
-      const nameValidation = validateName(formData.name);
-      if (!nameValidation.isValid) {
-        errors.name = nameValidation.error || 'Nome inválido';
-      }
-    } else {
-      // For login, just check if password exists
-      if (formData.password.length < 8) {
-        errors.password = 'A senha deve ter pelo menos 8 caracteres';
-      }
+    if (formData.password.length < 8) {
+      toast.error('A senha deve ter pelo menos 8 caracteres');
+      return false;
     }
     
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+    // Check password strength
+    const hasUpperCase = /[A-Z]/.test(formData.password);
+    const hasLowerCase = /[a-z]/.test(formData.password);
+    const hasNumbers = /\d/.test(formData.password);
+    
+    if (!isLogin && (!hasUpperCase || !hasLowerCase || !hasNumbers)) {
+      toast.error('A senha deve conter pelo menos uma letra maiúscula, uma minúscula e um número');
+      return false;
+    }
+    
+    if (!isLogin && formData.password !== formData.confirmPassword) {
+      toast.error('As senhas não coincidem');
+      return false;
+    }
+    
+    if (!isLogin && sanitizedName.length < 2) {
+      toast.error('O nome deve ter pelo menos 2 caracteres');
+      return false;
+    }
+    
+    // Update form data with sanitized values
+    setFormData(prev => ({
+      ...prev,
+      email: sanitizedEmail,
+      name: sanitizedName
+    }));
+    
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      toast.error('Por favor, corrija os erros no formulário');
-      return;
-    }
+    if (!validateForm()) return;
     
     setIsLoading(true);
     playClickSound();
     
     try {
-      let result;
+      let success = false;
       
       if (isLogin) {
-        result = await secureLogin(formData.email.trim(), formData.password);
+        success = await login(formData.email, formData.password);
+        if (!success) {
+          toast.error('E-mail ou senha incorretos');
+        }
       } else {
-        result = await secureRegister(formData.name.trim(), formData.email.trim(), formData.password);
+        success = await register(formData.name, formData.email, formData.password);
+        if (!success) {
+          toast.error('Este e-mail já está em uso');
+        }
       }
       
-      if (result.success) {
+      if (success) {
         setShowTransition(true);
         setTimeout(() => {
           navigate('/');
         }, 4000);
-      } else {
-        toast.error(result.error || 'Erro na autenticação');
       }
     } catch (error) {
-      toast.error('Ocorreu um erro inesperado. Tente novamente.');
+      toast.error('Ocorreu um erro. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Clear error when user starts typing
-    if (formErrors[name]) {
-      setFormErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setFormData({ name: '', email: '', password: '', confirmPassword: '' });
-    setFormErrors({});
     playClickSound();
   };
 
@@ -151,11 +152,6 @@ const AuthPage = () => {
           <CardDescription>
             {isLogin ? 'Entre na sua jornada de bem-estar' : 'Comece sua jornada de tranquilidade'}
           </CardDescription>
-          
-          <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground mt-2">
-            <Shield className="h-4 w-4" />
-            <span>Protegido com criptografia avançada</span>
-          </div>
         </CardHeader>
         
         <form onSubmit={handleSubmit}>
@@ -169,13 +165,10 @@ const AuthPage = () => {
                   type="text"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="Seu nome completo"
+                  placeholder="Seu nome"
                   required={!isLogin}
-                  className={`glassmorphism ${formErrors.name ? 'border-red-500' : ''}`}
+                  className="glassmorphism"
                 />
-                {formErrors.name && (
-                  <p className="text-sm text-red-600">{formErrors.name}</p>
-                )}
               </div>
             )}
             
@@ -189,11 +182,8 @@ const AuthPage = () => {
                 onChange={handleInputChange}
                 placeholder="seu@email.com"
                 required
-                className={`glassmorphism ${formErrors.email ? 'border-red-500' : ''}`}
+                className="glassmorphism"
               />
-              {formErrors.email && (
-                <p className="text-sm text-red-600">{formErrors.email}</p>
-              )}
             </div>
             
             <div className="space-y-2">
@@ -207,7 +197,7 @@ const AuthPage = () => {
                   onChange={handleInputChange}
                   placeholder="Sua senha"
                   required
-                  className={`glassmorphism pr-10 ${formErrors.password ? 'border-red-500' : ''}`}
+                  className="glassmorphism pr-10"
                 />
                 <Button
                   type="button"
@@ -219,14 +209,6 @@ const AuthPage = () => {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
-              {formErrors.password && (
-                <p className="text-sm text-red-600">{formErrors.password}</p>
-              )}
-              {!isLogin && (
-                <p className="text-xs text-muted-foreground">
-                  Mínimo 8 caracteres com maiúscula, minúscula e número
-                </p>
-              )}
             </div>
             
             {!isLogin && (
@@ -240,21 +222,9 @@ const AuthPage = () => {
                   onChange={handleInputChange}
                   placeholder="Confirme sua senha"
                   required={!isLogin}
-                  className={`glassmorphism ${formErrors.confirmPassword ? 'border-red-500' : ''}`}
+                  className="glassmorphism"
                 />
-                {formErrors.confirmPassword && (
-                  <p className="text-sm text-red-600">{formErrors.confirmPassword}</p>
-                )}
               </div>
-            )}
-            
-            {!isLogin && (
-              <Alert>
-                <Shield className="h-4 w-4" />
-                <AlertDescription>
-                  Seus dados são protegidos com criptografia de ponta a ponta e nunca são compartilhados.
-                </AlertDescription>
-              </Alert>
             )}
           </CardContent>
           
@@ -262,9 +232,9 @@ const AuthPage = () => {
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isLoading || authLoading}
+              disabled={isLoading}
             >
-              {isLoading || authLoading ? (
+              {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   {isLogin ? 'Entrando...' : 'Criando conta...'}
@@ -279,7 +249,6 @@ const AuthPage = () => {
               variant="ghost" 
               onClick={toggleMode}
               className="w-full"
-              disabled={isLoading || authLoading}
             >
               {isLogin ? 'Não tem conta? Crie uma' : 'Já tem conta? Entre'}
             </Button>
