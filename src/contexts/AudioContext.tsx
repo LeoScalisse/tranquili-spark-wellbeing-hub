@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import * as Tone from 'tone';
 import { AudioContextType } from '@/types/audio';
 import { createAudioEffects } from '@/utils/audioEffects';
@@ -16,7 +16,7 @@ export const useAudio = () => {
   return context;
 };
 
-export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AudioProvider = ({ children }: { children: React.ReactNode }) => {
   const [isSoundOn, setIsSoundOn] = useState(true);
   const [soundProfile, setSoundProfile] = useState('default');
   const [isInitialized, setIsInitialized] = useState(false);
