@@ -2,6 +2,7 @@
 import { User, MoodEntry } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
 import { calculateLevelFromXP, getXPForAction } from '@/utils/xpSystem';
+import { sanitizeInput } from '@/utils/securityUtils';
 
 export const useUserActions = (
   user: User | null,
@@ -48,16 +49,32 @@ export const useUserActions = (
     if (!user) return;
     
     try {
+      // Sanitize mood data
+      const sanitizedMood = {
+        user_id: user.id,
+        mood: sanitizeInput(mood.mood),
+        emoji: sanitizeInput(mood.emoji),
+        color: sanitizeInput(mood.color),
+        date: mood.date,
+        timestamp: mood.timestamp
+      };
+
+      // Check for duplicate mood entry on the same day to prevent spam
+      const { data: existingMood } = await supabase
+        .from('mood_entries')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('date', mood.date)
+        .single();
+
+      if (existingMood) {
+        console.log('🚨 Tentativa de entrada de humor duplicada detectada');
+        return;
+      }
+
       const { error: moodError } = await supabase
         .from('mood_entries')
-        .insert({
-          user_id: user.id,
-          mood: mood.mood,
-          emoji: mood.emoji,
-          color: mood.color,
-          date: mood.date,
-          timestamp: mood.timestamp
-        });
+        .insert(sanitizedMood);
 
       const { error: progressError } = await supabase
         .from('user_progress')
@@ -67,7 +84,12 @@ export const useUserActions = (
       if (!moodError && !progressError) {
         const updatedUser = {
           ...user,
-          moods: [...user.moods, mood],
+          moods: [...user.moods, {
+            ...mood,
+            mood: sanitizedMood.mood,
+            emoji: sanitizedMood.emoji,
+            color: sanitizedMood.color
+          }],
           lastMoodDate: mood.date
         };
         setUser(updatedUser);
@@ -84,17 +106,32 @@ export const useUserActions = (
     if (!user || user.achievements.includes(achievementId)) return;
     
     try {
+      const sanitizedAchievementId = sanitizeInput(achievementId);
+      
+      // Check for duplicate achievement to prevent race conditions
+      const { data: existingAchievement } = await supabase
+        .from('user_achievements')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('achievement_id', sanitizedAchievementId)
+        .single();
+
+      if (existingAchievement) {
+        console.log('🚨 Tentativa de conquista duplicada detectada');
+        return;
+      }
+
       const { error } = await supabase
         .from('user_achievements')
         .insert({
           user_id: user.id,
-          achievement_id: achievementId
+          achievement_id: sanitizedAchievementId
         });
 
       if (!error) {
         const updatedUser = {
           ...user,
-          achievements: [...user.achievements, achievementId]
+          achievements: [...user.achievements, sanitizedAchievementId]
         };
         setUser(updatedUser);
       }
@@ -141,12 +178,15 @@ export const useUserActions = (
     if (!user) return;
     
     try {
+      const sanitizedGameId = sanitizeInput(gameId);
+      const sanitizedProgress = JSON.stringify(progress); // Basic JSON sanitization
+      
       const { error } = await supabase
         .from('game_progress')
         .upsert({
           user_id: user.id,
-          game_id: gameId,
-          progress
+          game_id: sanitizedGameId,
+          progress: JSON.parse(sanitizedProgress)
         });
 
       if (!error) {
@@ -154,7 +194,7 @@ export const useUserActions = (
           ...user,
           gameProgress: {
             ...user.gameProgress,
-            [gameId]: progress
+            [sanitizedGameId]: progress
           }
         };
         setUser(updatedUser);
