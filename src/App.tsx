@@ -1,10 +1,9 @@
-
-import React from "react";
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { UserProvider } from "./contexts/UserContext";
 import { AudioProvider } from "./contexts/AudioContext";
@@ -23,16 +22,9 @@ import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import PWAUpdateNotification from "./components/PWAUpdateNotification";
 import PWAStatusIndicator from "./components/PWAStatusIndicator";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
-const App: React.FC = () => {
+const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

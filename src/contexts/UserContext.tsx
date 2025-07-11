@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, UserContextType } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,14 +18,14 @@ export const useUser = () => {
   return context;
 };
 
-export const UserProvider = ({ children }: { children: ReactNode }) => {
+export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const { user: sessionUser, session, isAuthenticated: sessionAuth, isLoading: sessionLoading } = useSecureSession();
   const { login, register } = useAuth(setUser, setIsAuthenticated);
-  const { addXP, addMood, updateMood, unlockAchievement, updateStreak, updateGameProgress, logout } = useUserActions(
+  const { addXP, addMood, unlockAchievement, updateStreak, updateGameProgress, logout } = useUserActions(
     user,
     setUser,
     setIsAuthenticated
@@ -166,7 +166,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     logout,
     addXP,
     addMood,
-    updateMood,
     unlockAchievement,
     updateStreak,
     updateGameProgress,
