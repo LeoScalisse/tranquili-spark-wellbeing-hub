@@ -1,4 +1,3 @@
-
 import { User, MoodEntry } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
 import { calculateLevelFromXP, getXPForAction } from '@/utils/xpSystem';
@@ -65,7 +64,7 @@ export const useUserActions = (
         .select('id')
         .eq('user_id', user.id)
         .eq('date', mood.date)
-        .single();
+        .maybeSingle();
 
       if (existingMood) {
         console.log('🚨 Tentativa de entrada de humor duplicada detectada');
@@ -99,6 +98,48 @@ export const useUserActions = (
       }
     } catch (error) {
       console.error('Error adding mood:', error);
+      throw error;
+    }
+  };
+
+  const updateMood = async (mood: MoodEntry) => {
+    if (!user) return;
+    
+    try {
+      // Sanitize mood data
+      const sanitizedMood = {
+        mood: sanitizeInput(mood.mood),
+        emoji: sanitizeInput(mood.emoji),
+        color: sanitizeInput(mood.color),
+        timestamp: mood.timestamp
+      };
+
+      // Update the mood entry in the database
+      const { error } = await supabase
+        .from('mood_entries')
+        .update(sanitizedMood)
+        .eq('id', mood.id)
+        .eq('user_id', user.id);
+
+      if (!error) {
+        // Update the local state
+        const updatedMoods = user.moods.map(m => 
+          m.id === mood.id 
+            ? { ...mood, mood: sanitizedMood.mood, emoji: sanitizedMood.emoji, color: sanitizedMood.color }
+            : m
+        );
+        
+        const updatedUser = {
+          ...user,
+          moods: updatedMoods
+        };
+        setUser(updatedUser);
+      } else {
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error updating mood:', error);
+      throw error;
     }
   };
 
@@ -213,6 +254,7 @@ export const useUserActions = (
   return {
     addXP,
     addMood,
+    updateMood,
     unlockAchievement,
     updateStreak,
     updateGameProgress,

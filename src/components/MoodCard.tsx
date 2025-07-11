@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { useAudio } from '@/contexts/AudioContext';
@@ -5,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { Edit2, Check, X } from 'lucide-react';
 import AIAdviceModal from './AIAdviceModal';
 
 interface Mood {
@@ -26,9 +28,9 @@ const moods: Mood[] = [
 
 const MoodCard = () => {
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
-  const [moodRegistered, setMoodRegistered] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [showAdviceModal, setShowAdviceModal] = useState(false);
-  const { user, addXP, addMood, updateStreak } = useUser();
+  const { user, addXP, addMood, updateMood, updateStreak } = useUser();
   const { playMoodSound, playMoodConfirmation } = useAudio();
 
   const handleMoodSelect = (mood: Mood) => {
@@ -36,20 +38,20 @@ const MoodCard = () => {
     playMoodSound(mood.id);
   };
 
-  const handleRegisterMood = () => {
+  const handleRegisterMood = async () => {
     if (!selectedMood || !user) return;
 
     const today = new Date().toDateString();
     
-    // Check if mood already registered today
+    // Check if mood already registered today and not editing
     const todayMood = user.moods.find(m => m.date === today);
-    if (todayMood) {
+    if (todayMood && !isEditing) {
       toast.error('Você já registrou seu humor hoje!');
       return;
     }
 
     const moodEntry = {
-      id: Date.now().toString(),
+      id: isEditing ? todayMood!.id : Date.now().toString(),
       mood: selectedMood.name,
       emoji: selectedMood.emoji,
       color: selectedMood.color,
@@ -57,15 +59,42 @@ const MoodCard = () => {
       timestamp: Date.now()
     };
 
-    addMood(moodEntry);
-    addXP(10);
-    updateStreak();
-    setMoodRegistered(true);
-    playMoodConfirmation();
-    
-    toast.success('Humor registrado! +10 XP', {
-      icon: selectedMood.emoji,
-    });
+    try {
+      if (isEditing) {
+        await updateMood(moodEntry);
+        toast.success('Humor corrigido com sucesso! ✨', {
+          icon: selectedMood.emoji,
+        });
+      } else {
+        await addMood(moodEntry);
+        addXP(10);
+        updateStreak();
+        toast.success('Humor registrado! +10 XP', {
+          icon: selectedMood.emoji,
+        });
+      }
+      
+      setIsEditing(false);
+      setSelectedMood(null);
+      playMoodConfirmation();
+    } catch (error) {
+      toast.error('Erro ao registrar humor. Tente novamente.');
+      console.error('Error registering mood:', error);
+    }
+  };
+
+  const handleEditMood = () => {
+    const todayMood = getTodayMood();
+    if (todayMood) {
+      const currentMood = moods.find(m => m.name === todayMood.mood);
+      setSelectedMood(currentMood || null);
+      setIsEditing(true);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setSelectedMood(null);
   };
 
   const handleGetAdvice = () => {
@@ -79,6 +108,7 @@ const MoodCard = () => {
   };
 
   const todayMood = getTodayMood();
+  const canRegisterToday = !todayMood || isEditing;
 
   return (
     <>
@@ -88,30 +118,54 @@ const MoodCard = () => {
             😊 Como você está se sentindo?
           </CardTitle>
           <CardDescription>
-            Registre seu humor diário e ganhe XP para subir de nível!
+            {isEditing 
+              ? 'Corrija seu humor de hoje'
+              : 'Registre seu humor diário e ganhe XP para subir de nível!'
+            }
           </CardDescription>
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {todayMood ? (
+          {todayMood && !isEditing ? (
             <div className="text-center py-8">
               <div className="text-6xl mb-4">{todayMood.emoji}</div>
-              <Badge variant="secondary" className="text-lg px-4 py-2">
+              <Badge variant="secondary" className="text-lg px-4 py-2 mb-4">
                 Hoje você está: {todayMood.mood}
               </Badge>
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-sm text-muted-foreground mb-4">
                 Humor já registrado hoje! Volte amanhã para continuar sua sequência.
               </p>
-              <Button 
-                onClick={handleGetAdvice}
-                className="mt-4"
-                variant="outline"
-              >
-                💡 Receber Conselho da Tranquilinha
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button 
+                  onClick={handleEditMood}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <Edit2 className="h-4 w-4" />
+                  Corrigir Humor
+                </Button>
+                <Button 
+                  onClick={handleGetAdvice}
+                  variant="outline"
+                >
+                  💡 Receber Conselho da Tranquilinha
+                </Button>
+              </div>
             </div>
           ) : (
             <>
+              {isEditing && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center gap-2 text-blue-800">
+                    <Edit2 className="h-4 w-4" />
+                    <span className="font-medium">Modo de Correção</span>
+                  </div>
+                  <p className="text-sm text-blue-600 mt-1">
+                    Selecione o humor correto para hoje. Você poderá fazer isso apenas uma vez.
+                  </p>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {moods.map((mood) => (
                   <button
@@ -136,22 +190,25 @@ const MoodCard = () => {
                     Selecionado: {selectedMood.emoji} {selectedMood.name}
                   </Badge>
                   
-                  <div className="space-y-2">
+                  <div className="flex gap-2 justify-center">
                     <Button 
                       onClick={handleRegisterMood}
-                      className="w-full"
+                      className="flex items-center gap-2"
                       size="lg"
                     >
-                      ✨ Registrar Humor (+10 XP)
+                      <Check className="h-4 w-4" />
+                      {isEditing ? 'Corrigir Humor' : '✨ Registrar Humor (+10 XP)'}
                     </Button>
                     
-                    {moodRegistered && (
+                    {isEditing && (
                       <Button 
-                        onClick={handleGetAdvice}
+                        onClick={handleCancelEdit}
                         variant="outline"
-                        className="w-full"
+                        size="lg"
+                        className="flex items-center gap-2"
                       >
-                        💡 Receber Conselho da Tranquilinha
+                        <X className="h-4 w-4" />
+                        Cancelar
                       </Button>
                     )}
                   </div>

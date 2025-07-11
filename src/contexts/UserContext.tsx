@@ -25,7 +25,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const { user: sessionUser, session, isAuthenticated: sessionAuth, isLoading: sessionLoading } = useSecureSession();
   const { login, register } = useAuth(setUser, setIsAuthenticated);
-  const { addXP, addMood, unlockAchievement, updateStreak, updateGameProgress, logout } = useUserActions(
+  const { addXP, addMood, updateMood, unlockAchievement, updateStreak, updateGameProgress, logout } = useUserActions(
     user,
     setUser,
     setIsAuthenticated
@@ -166,6 +166,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     logout,
     addXP,
     addMood,
+    updateMood,
     unlockAchievement,
     updateStreak,
     updateGameProgress,

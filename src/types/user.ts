@@ -44,6 +44,7 @@ export interface UserContextType {
   logout: () => void;
   addXP: (amount: number) => void;
   addMood: (mood: MoodEntry) => void;
+  updateMood: (mood: MoodEntry) => void;
   unlockAchievement: (achievementId: string) => void;
   updateStreak: () => void;
   updateGameProgress: (gameId: string, progress: any) => void;
