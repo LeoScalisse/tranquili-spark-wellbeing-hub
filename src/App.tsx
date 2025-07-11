@@ -34,62 +34,60 @@ const queryClient = new QueryClient({
 
 const App: React.FC = () => {
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <ThemeProvider>
-            <UserProvider>
-              <AudioProvider>
-                <AchievementAnimationProvider>
-                  <BrowserRouter>
-                    <Toaster />
-                    <Sonner />
-                    <GlobalAchievementWrapper />
-                    <PWAStatusIndicator />
-                    <PWAUpdateNotification />
-                    <PWAInstallPrompt />
-                    <Routes>
-                      <Route path="/auth" element={<AuthPage />} />
-                      <Route path="/" element={
-                        <ProtectedRoute>
-                          <HomePage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/chat" element={
-                        <ProtectedRoute>
-                          <ChatPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/reports" element={
-                        <ProtectedRoute>
-                          <ReportPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/achievements" element={
-                        <ProtectedRoute>
-                          <AchievementsPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/shop" element={
-                        <ProtectedRoute>
-                          <TranquiliSpacePage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/games" element={
-                        <ProtectedRoute>
-                          <TranquiliGamesPage />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </BrowserRouter>
-                </AchievementAnimationProvider>
-              </AudioProvider>
-            </UserProvider>
-          </ThemeProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <ThemeProvider>
+          <UserProvider>
+            <AudioProvider>
+              <AchievementAnimationProvider>
+                <BrowserRouter>
+                  <Toaster />
+                  <Sonner />
+                  <GlobalAchievementWrapper />
+                  <PWAStatusIndicator />
+                  <PWAUpdateNotification />
+                  <PWAInstallPrompt />
+                  <Routes>
+                    <Route path="/auth" element={<AuthPage />} />
+                    <Route path="/" element={
+                      <ProtectedRoute>
+                        <HomePage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/chat" element={
+                      <ProtectedRoute>
+                        <ChatPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/reports" element={
+                      <ProtectedRoute>
+                        <ReportPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/achievements" element={
+                      <ProtectedRoute>
+                        <AchievementsPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/shop" element={
+                      <ProtectedRoute>
+                        <TranquiliSpacePage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/games" element={
+                      <ProtectedRoute>
+                        <TranquiliGamesPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </AchievementAnimationProvider>
+            </AudioProvider>
+          </UserProvider>
+        </ThemeProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 };
 
