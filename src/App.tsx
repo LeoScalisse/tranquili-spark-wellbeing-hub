@@ -21,6 +21,8 @@ import GlobalAchievementWrapper from "./components/GlobalAchievementWrapper";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import PWAUpdateNotification from "./components/PWAUpdateNotification";
 import PWAStatusIndicator from "./components/PWAStatusIndicator";
+import { EventSystemProvider } from "./contexts/EventSystemContext";
+import ReactiveNotificationSystem from "./components/ReactiveNotificationSystem";
 
 const queryClient = new QueryClient();
 
@@ -29,54 +31,57 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider>
-          <UserProvider>
-            <AudioProvider>
-              <AchievementAnimationProvider>
-                <BrowserRouter>
-                  <Toaster />
-                  <Sonner />
-                  <GlobalAchievementWrapper />
-                  <PWAStatusIndicator />
-                  <PWAUpdateNotification />
-                  <PWAInstallPrompt />
-                  <Routes>
-                    <Route path="/auth" element={<AuthPage />} />
-                    <Route path="/" element={
-                      <ProtectedRoute>
-                        <HomePage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/chat" element={
-                      <ProtectedRoute>
-                        <ChatPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/reports" element={
-                      <ProtectedRoute>
-                        <ReportPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/achievements" element={
-                      <ProtectedRoute>
-                        <AchievementsPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/shop" element={
-                      <ProtectedRoute>
-                        <TranquiliSpacePage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/games" element={
-                      <ProtectedRoute>
-                        <TranquiliGamesPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </BrowserRouter>
-              </AchievementAnimationProvider>
-            </AudioProvider>
-          </UserProvider>
+          <EventSystemProvider>
+            <UserProvider>
+              <AudioProvider>
+                <AchievementAnimationProvider>
+                  <BrowserRouter>
+                    <Toaster />
+                    <Sonner />
+                    <GlobalAchievementWrapper />
+                    <ReactiveNotificationSystem />
+                    <PWAStatusIndicator />
+                    <PWAUpdateNotification />
+                    <PWAInstallPrompt />
+                    <Routes>
+                      <Route path="/auth" element={<AuthPage />} />
+                      <Route path="/" element={
+                        <ProtectedRoute>
+                          <HomePage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/chat" element={
+                        <ProtectedRoute>
+                          <ChatPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/reports" element={
+                        <ProtectedRoute>
+                          <ReportPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/achievements" element={
+                        <ProtectedRoute>
+                          <AchievementsPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/shop" element={
+                        <ProtectedRoute>
+                          <TranquiliSpacePage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/games" element={
+                        <ProtectedRoute>
+                          <TranquiliGamesPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </BrowserRouter>
+                </AchievementAnimationProvider>
+              </AudioProvider>
+            </UserProvider>
+          </EventSystemProvider>
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>

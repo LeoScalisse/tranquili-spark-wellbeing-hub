@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, UserContextType } from '@/types/user';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,6 +6,7 @@ import { useUserActions } from '@/hooks/useUserActions';
 import { useSecureSession } from '@/hooks/useSecureSession';
 import { calculateLevelFromXP } from '@/utils/xpSystem';
 import { sanitizeInput } from '@/utils/securityUtils';
+import { useEventSystem } from './EventSystemContext';
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -23,6 +23,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Tentar acessar o EventSystem se disponível
+  let eventEmit: ((eventName: string, data?: any) => void) | undefined;
+  try {
+    const { emit } = useEventSystem();
+    eventEmit = emit;
+  } catch {
+    // EventSystem não disponível ainda
+  }
+
   const { user: sessionUser, session, isAuthenticated: sessionAuth, isLoading: sessionLoading } = useSecureSession();
   const { login, register } = useAuth(setUser, setIsAuthenticated);
   const { addXP, addMood, unlockAchievement, updateStreak, updateGameProgress, logout } = useUserActions(
@@ -30,6 +39,31 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser,
     setIsAuthenticated
   );
+
+  // Wrapper para addXP que emite eventos
+  const reactiveAddXP = async (amount: number, action?: string) => {
+    await addXP(amount, action);
+    eventEmit?.('xp_gained', { amount, action });
+  };
+
+  // Wrapper para addMood que emite eventos
+  const reactiveAddMood = async (mood: any) => {
+    await addMood(mood);
+    eventEmit?.('mood_registered', { mood });
+  };
+
+  // Wrapper para unlockAchievement que emite eventos
+  const reactiveUnlockAchievement = async (achievementId: string) => {
+    await unlockAchievement(achievementId);
+    eventEmit?.('achievement_unlocked', { achievementId });
+  };
+
+  // Wrapper para updateStreak que emite eventos
+  const reactiveUpdateStreak = async () => {
+    const oldStreak = user?.streak || 0;
+    await updateStreak();
+    eventEmit?.('streak_updated', { oldStreak, newStreak: (user?.streak || 0) + 1 });
+  };
 
   useEffect(() => {
     setIsAuthenticated(sessionAuth);
@@ -164,10 +198,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     login,
     register,
     logout,
-    addXP,
-    addMood,
-    unlockAchievement,
-    updateStreak,
+    addXP: reactiveAddXP,
+    addMood: reactiveAddMood,
+    unlockAchievement: reactiveUnlockAchievement,
+    updateStreak: reactiveUpdateStreak,
     updateGameProgress,
   };
 
