@@ -15,6 +15,7 @@ import ReportPage from "./pages/ReportPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import TranquiliSpacePage from "./pages/TranquiliSpacePage";
 import TranquiliGamesPage from "./pages/TranquiliGamesPage";
+import DiagnosticPage from "./pages/DiagnosticPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import GlobalAchievementWrapper from "./components/GlobalAchievementWrapper";
@@ -73,6 +74,11 @@ const App = () => {
                       <Route path="/games" element={
                         <ProtectedRoute>
                           <TranquiliGamesPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/diagnostic" element={
+                        <ProtectedRoute>
+                          <DiagnosticPage />
                         </ProtectedRoute>
                       } />
                       <Route path="*" element={<NotFound />} />

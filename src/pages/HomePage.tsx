@@ -9,6 +9,7 @@ import ReactiveMoodCard from '@/components/ReactiveMoodCard';
 import DiaryCard from '@/components/DiaryCard';
 import ServicesCarousel from '@/components/ServicesCarousel';
 import QuickActions from '@/components/QuickActions';
+import { DiagnosticButton } from '@/components/DiagnosticButton';
 
 const HomePage = () => {
   const { user } = useUser();
@@ -40,6 +41,11 @@ const HomePage = () => {
         <ServicesCarousel />
         
         <QuickActions />
+        
+        {/* Diagnostic Button - Fixed position for easy access */}
+        <div className="fixed bottom-4 right-4 z-10">
+          <DiagnosticButton />
+        </div>
       </div>
     </div>
   );
