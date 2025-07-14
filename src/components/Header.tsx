@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Sun, Moon, Sparkles, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { calculateXPRequirement } from '@/utils/xpSystem';
+import { getFirstName } from '@/utils/userUtils';
 
 const Header = () => {
   const { user, logout } = useUser();
@@ -65,7 +66,7 @@ const Header = () => {
             Tranquili<span className="tranquili-plus">+</span>
           </h1>
           <Badge variant="secondary" className="text-sm">
-            Olá, {user.name}! 👋
+            Olá, {getFirstName(user.name)}! 👋
           </Badge>
         </div>
         

@@ -15,3 +15,13 @@ export const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
+
+/**
+ * Extrai o primeiro nome de um nome completo
+ * @param fullName - Nome completo do usuário
+ * @returns Primeiro nome
+ */
+export const getFirstName = (fullName: string): string => {
+  if (!fullName) return '';
+  return fullName.trim().split(' ')[0];
+};
