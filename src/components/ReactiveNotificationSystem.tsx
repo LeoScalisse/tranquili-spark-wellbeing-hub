@@ -7,7 +7,7 @@ import { Trophy, Star, Zap, Target } from 'lucide-react';
 
 const ReactiveNotificationSystem = () => {
   const { subscribe } = useEventSystem();
-  const { playNotificationSound, playAchievementSound } = useAudio();
+  const { playSuccessSound, playAchievementSound } = useAudio();
 
   useEffect(() => {
     console.log('🔔 Sistema de notificações reativas iniciado');
@@ -57,7 +57,7 @@ const ReactiveNotificationSystem = () => {
 
       // Notificações de desbloqueio de humor
       subscribe('mood_unlocked', () => {
-        playNotificationSound?.();
+        playSuccessSound?.();
         toast.success('🌅 Novo dia! Sistema de humor desbloqueado!', {
           icon: <Target className="h-4 w-4" />,
           duration: 5000,
@@ -100,7 +100,7 @@ const ReactiveNotificationSystem = () => {
       console.log('🔔 Parando sistema de notificações reativas');
       unsubscribers.forEach(unsub => unsub());
     };
-  }, [subscribe, playNotificationSound, playAchievementSound]);
+  }, [subscribe, playSuccessSound, playAchievementSound]);
 
   return null; // Componente invisível, apenas lógica
 };

@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 export const useAutoLevelUp = () => {
   const { user } = useUser();
   const { subscribe } = useEventSystem();
-  const { playLevelUpSound } = useAudio();
+  const { playAchievementSound } = useAudio();
   const [previousLevel, setPreviousLevel] = useState<number | null>(null);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export const useAutoLevelUp = () => {
       console.log(`🎉 LEVEL UP! ${previousLevel} → ${user.level}`);
       
       // Celebrar subida de nível
-      playLevelUpSound?.();
+      playAchievementSound?.();
       
       toast.success(`🎉 Parabéns! Você subiu para o nível ${user.level}!`, {
         icon: '⭐',
@@ -32,7 +32,7 @@ export const useAutoLevelUp = () => {
     }
 
     setPreviousLevel(user.level);
-  }, [user?.level, previousLevel, playLevelUpSound]);
+  }, [user?.level, previousLevel, playAchievementSound]);
 
   // Listener para ganho de XP
   useEffect(() => {
