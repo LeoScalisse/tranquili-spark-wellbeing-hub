@@ -59,6 +59,33 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+
+  .theme-tranquili {
+    --background: 248 100% 98%;
+    --foreground: 243 47% 15%;
+    --card: 250 100% 99%;
+    --card-foreground: 243 47% 15%;
+    --popover: 250 100% 99%;
+    --popover-foreground: 243 47% 15%;
+    --primary: 258 90% 66%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 100% 95%;
+    --secondary-foreground: 243 47% 15%;
+    --muted: 220 100% 95%;
+    --muted-foreground: 243 25% 45%;
+    --accent: 185 100% 85%;
+    --accent-foreground: 243 47% 15%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 220 100% 90%;
+    --input: 220 100% 90%;
+    --ring: 258 90% 66%;
+    --chart-1: 258 90% 66%;
+    --chart-2: 185 100% 70%;
+    --chart-3: 220 100% 75%;
+    --chart-4: 300 85% 75%;
+    --chart-5: 200 90% 70%;
+  }
 }
 
 @layer base {
