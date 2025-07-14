@@ -23,6 +23,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  console.log('🔄 UserProvider renderizando...');
+
   // Tentar acessar o EventSystem se disponível
   let eventEmit: ((eventName: string, data?: any) => void) | undefined;
   try {
@@ -30,6 +32,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     eventEmit = emit;
   } catch {
     // EventSystem não disponível ainda
+    console.log('📡 EventSystem não disponível no UserProvider');
   }
 
   const { user: sessionUser, session, isAuthenticated: sessionAuth, isLoading: sessionLoading } = useSecureSession();
