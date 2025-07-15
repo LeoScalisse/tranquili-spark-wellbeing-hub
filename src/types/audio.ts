@@ -3,38 +3,11 @@ export type MoodType = 'happy' | 'sad' | 'calm' | 'anxious' | 'angry' | 'thought
 export type GameSoundType = 'correct' | 'incorrect' | 'click' | 'victory';
 export type CardSoundType = 'flip' | 'match' | 'mismatch';
 export type GameType = 'color' | 'memory';
-export type AudioMethod = 'tone' | 'webaudio' | 'html5' | 'fallback';
-
-export interface PlatformInfo {
-  isPWA: boolean;
-  isMobile: boolean;
-  isIOS: boolean;
-  isAndroid: boolean;
-  isStandalone: boolean;
-  userAgent: string;
-  supportsWebAudio: boolean;
-  requiresUserGesture: boolean;
-}
 
 export interface AudioContextType {
   // Controles globais
   isSoundOn: boolean;
   toggleSound: () => void;
-  
-  // Estados do sistema de áudio
-  isAudioReady: boolean;
-  needsUserInteraction: boolean;
-  audioError: string | null;
-  audioMethod: AudioMethod | null;
-  
-  // Funções de controle do sistema
-  initializeAudio: () => Promise<boolean>;
-  resetAudio: () => Promise<void>;
-  testAudio: () => Promise<boolean>;
-  
-  // Informações de debug e plataforma
-  getAudioDebugInfo: () => string[];
-  platformInfo: PlatformInfo;
   
   // Legacy properties for backward compatibility
   isAudioEnabled: boolean;

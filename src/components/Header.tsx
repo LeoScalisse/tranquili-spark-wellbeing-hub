@@ -6,19 +6,19 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Sun, Moon, Sparkles, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { calculateXPRequirement } from '@/utils/xpSystem';
-import { getFirstName } from '@/utils/userUtils';
 
 const Header = () => {
   const { user, logout } = useUser();
   const { theme, toggleTheme } = useTheme();
   const { playClickSound } = useAudio();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     playClickSound();
     logout();
-    // Usar window.location ao invés de navigate para evitar problemas de context
-    window.location.href = '/auth';
+    navigate('/auth');
   };
 
   const handleThemeToggle = () => {
@@ -65,7 +65,7 @@ const Header = () => {
             Tranquili<span className="tranquili-plus">+</span>
           </h1>
           <Badge variant="secondary" className="text-sm">
-            Olá, {getFirstName(user.name)}! 👋
+            Olá, {user.name}! 👋
           </Badge>
         </div>
         

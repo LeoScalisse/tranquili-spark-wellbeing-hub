@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { apiHealthChecker } from '@/utils/apiHealthCheck';
 
 export interface Flashcard {
   front: string;
@@ -18,7 +17,7 @@ export interface ClaudeResponse {
 }
 
 class ClaudeService {
-  private async callClaudeFunction(body: any, retries = 3): Promise<any> {
+  private async callClaudeFunction(body: any, retries = 2): Promise<any> {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         console.log(`🚀 Chamando Claude API - Tentativa ${attempt}/${retries}`);
@@ -31,9 +30,7 @@ class ClaudeService {
           console.error(`❌ Erro Supabase (tentativa ${attempt}):`, error);
           
           // Se é erro de autenticação, não tentar novamente
-          if (error.message?.includes('JWT') || 
-              error.message?.includes('unauthorized') || 
-              error.message?.includes('Invalid Refresh Token')) {
+          if (error.message?.includes('JWT') || error.message?.includes('unauthorized')) {
             throw new Error('Sessão expirada. Faça login novamente.');
           }
           
@@ -42,7 +39,7 @@ class ClaudeService {
             throw new Error(`Erro de conexão: ${error.message}`);
           }
           
-          // Aguardar progressivamente mais tempo entre tentativas
+          // Aguardar antes da próxima tentativa
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
           continue;
         }
@@ -53,19 +50,11 @@ class ClaudeService {
       } catch (error) {
         console.error(`🚨 Erro na tentativa ${attempt}:`, error);
         
-        // Se é erro de autenticação, não tentar novamente
-        if (error.message?.includes('expirada') || 
-            error.message?.includes('login') ||
-            error.message?.includes('JWT') ||
-            error.message?.includes('unauthorized')) {
-          throw error;
-        }
-        
         if (attempt === retries) {
           throw error;
         }
         
-        // Aguardar progressivamente mais tempo entre tentativas
+        // Aguardar antes da próxima tentativa
         await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
       }
     }
@@ -158,31 +147,6 @@ class ClaudeService {
       }
       
       return 'Oi! Estou passando por algumas dificuldades técnicas, mas logo estarei de volta! Enquanto isso, lembre-se: você é mais forte do que imagina. 💪✨';
-    }
-  }
-
-  async testConnection(): Promise<{ success: boolean; message: string; responseTime?: number }> {
-    try {
-      const healthStatus = await apiHealthChecker.checkApiHealth(true);
-      
-      if (healthStatus.isHealthy) {
-        return {
-          success: true,
-          message: 'Conexão com Tranquilinha funcionando perfeitamente! 🌸',
-          responseTime: healthStatus.responseTime
-        };
-      } else {
-        return {
-          success: false,
-          message: `Problemas na conexão: ${healthStatus.error}`,
-          responseTime: healthStatus.responseTime
-        };
-      }
-    } catch (error) {
-      return {
-        success: false,
-        message: `Erro no teste: ${error.message}`
-      };
     }
   }
 }
