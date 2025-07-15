@@ -1,5 +1,4 @@
-import React, { createContext, useContext } from 'react';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 import * as Tone from 'tone';
 import { AudioContextType } from '@/types/audio';
 import { createAudioEffects } from '@/utils/audioEffects';
@@ -18,7 +17,7 @@ export const useAudio = () => {
   return context;
 };
 
-export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AudioProvider = ({ children }: { children: ReactNode }) => {
   const [isSoundOn, setIsSoundOn] = useState(() => {
     // Recuperar preferência salva
     const saved = localStorage.getItem('tranquili-sound-enabled');
