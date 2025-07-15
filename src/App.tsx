@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -8,7 +9,6 @@ import { UserProvider } from "./contexts/UserContext";
 import { AudioProvider } from "./contexts/AudioContext";
 import { AchievementAnimationProvider } from "./contexts/AchievementAnimationContext";
 import AuthPage from "./pages/AuthPage";
-import OnboardingPage from "./pages/OnboardingPage";
 import HomePage from "./pages/HomePage";
 import ChatPage from "./pages/ChatPage";
 import ReportPage from "./pages/ReportPage";
@@ -30,65 +30,66 @@ const queryClient = new QueryClient();
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <EventSystemProvider>
-          <UserProvider>
-            <AudioProvider>
-              <AchievementAnimationProvider>
-                <BrowserRouter>
-                  <Toaster />
-                  <Sonner />
-                  <GlobalAchievementWrapper />
-                  <ReactiveNotificationSystem />
-                  <PWAStatusIndicator />
-                  <PWAUpdateNotification />
-                  <PWAInstallPrompt />
-                  <Routes>
-                    <Route path="/onboarding" element={<OnboardingPage />} />
-                    <Route path="/auth" element={<AuthPage />} />
-                    <Route path="/" element={
-                      <ProtectedRoute>
-                        <HomePage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/chat" element={
-                      <ProtectedRoute>
-                        <ChatPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/reports" element={
-                      <ProtectedRoute>
-                        <ReportPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/achievements" element={
-                      <ProtectedRoute>
-                        <AchievementsPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/shop" element={
-                      <ProtectedRoute>
-                        <TranquiliSpacePage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/games" element={
-                      <ProtectedRoute>
-                        <TranquiliGamesPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/diagnostic" element={
-                      <ProtectedRoute>
-                        <DiagnosticPage />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </BrowserRouter>
-              </AchievementAnimationProvider>
-            </AudioProvider>
-          </UserProvider>
-        </EventSystemProvider>
-      </ThemeProvider>
+      <TooltipProvider>
+        <ThemeProvider>
+          <EventSystemProvider>
+            <UserProvider>
+              <AudioProvider>
+                <AchievementAnimationProvider>
+                  <BrowserRouter>
+                    <Toaster />
+                    <Sonner />
+                    <GlobalAchievementWrapper />
+                    <ReactiveNotificationSystem />
+                    <PWAStatusIndicator />
+                    <PWAUpdateNotification />
+                    <PWAInstallPrompt />
+                    <Routes>
+                      <Route path="/auth" element={<AuthPage />} />
+                      <Route path="/" element={
+                        <ProtectedRoute>
+                          <HomePage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/chat" element={
+                        <ProtectedRoute>
+                          <ChatPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/reports" element={
+                        <ProtectedRoute>
+                          <ReportPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/achievements" element={
+                        <ProtectedRoute>
+                          <AchievementsPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/shop" element={
+                        <ProtectedRoute>
+                          <TranquiliSpacePage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/games" element={
+                        <ProtectedRoute>
+                          <TranquiliGamesPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/diagnostic" element={
+                        <ProtectedRoute>
+                          <DiagnosticPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </BrowserRouter>
+                </AchievementAnimationProvider>
+              </AudioProvider>
+            </UserProvider>
+          </EventSystemProvider>
+        </ThemeProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 };

@@ -1,12 +1,12 @@
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useAudio } from './AudioContext';
 
 interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: ReactNode;
+  icon: React.ReactNode;
   category: 'mood' | 'streak' | 'interaction' | 'exploration';
 }
 
@@ -27,7 +27,7 @@ export const useAchievementAnimation = () => {
   return context;
 };
 
-export const AchievementAnimationProvider = ({ children }: { children: ReactNode }) => {
+export const AchievementAnimationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentAchievement, setCurrentAchievement] = useState<Achievement | null>(null);
   const [isAnimationVisible, setIsAnimationVisible] = useState(false);
   const { playAchievementSound } = useAudio();

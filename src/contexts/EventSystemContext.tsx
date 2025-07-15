@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
 interface EventData {
   [key: string]: any;
@@ -24,7 +24,7 @@ interface EventSystemProviderProps {
   children: ReactNode;
 }
 
-export const EventSystemProvider = ({ children }: EventSystemProviderProps) => {
+export const EventSystemProvider: React.FC<EventSystemProviderProps> = ({ children }) => {
   const [listeners, setListeners] = useState<Record<string, ((data?: EventData) => void)[]>>({});
 
   const emit = useCallback((eventName: string, data?: EventData) => {
