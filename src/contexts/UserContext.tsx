@@ -30,12 +30,23 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     let isMounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
 
     const initializeAuth = async () => {
       try {
         console.log('🔄 Inicializando autenticação...');
         
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Timeout reduzido para 5 segundos
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout na sessão')), 5000)
+        );
+
+        const { data: { session }, error } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as any;
         
         if (error) {
           console.error('❌ Erro ao obter sessão:', error);
@@ -57,6 +68,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       } catch (error) {
         console.error('❌ Erro na inicialização:', error);
+        
+        // Retry lógico para problemas de rede
+        if (retryCount < maxRetries && error.message?.includes('Timeout')) {
+          retryCount++;
+          console.log(`🔄 Tentativa ${retryCount}/${maxRetries} de reconexão...`);
+          setTimeout(initializeAuth, 2000 * retryCount);
+          return;
+        }
+        
         if (isMounted) {
           setIsLoading(false);
         }
@@ -94,7 +114,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       console.log('📊 Buscando perfil do usuário:', userId);
       
-      // Buscar profile com timeout
+      // Buscar dados com timeout otimizado
       const profilePromise = supabase
         .from('profiles')
         .select('*')
@@ -119,9 +139,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         .order('created_at', { ascending: false })
         .limit(10);
 
-      // Timeout de 10 segundos para evitar loading infinito
+      // Timeout reduzido para 7 segundos
       const timeout = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout na busca de dados')), 10000)
+        setTimeout(() => reject(new Error('Timeout na busca de dados')), 7000)
       );
 
       const [profileResult, progressResult, achievementsResult, moodsResult] = await Promise.race([
@@ -153,12 +173,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             throw insertError;
           }
           
-          // Tentar buscar novamente
-          const { data: newProgress, error: newProgressError } = await supabase
+          // Tentar buscar novamente com timeout
+          const newProgressPromise = supabase
             .from('user_progress')
             .select('*')
             .eq('user_id', userId)
             .single();
+            
+          const { data: newProgress, error: newProgressError } = await Promise.race([
+            newProgressPromise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+          ]) as any;
             
           if (newProgressError) {
             throw newProgressError;
@@ -204,17 +229,29 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error) {
       console.error('❌ Erro ao buscar perfil do usuário:', error);
       
-      // Em caso de erro, fazer logout para evitar estados inconsistentes
-      setUser(null);
-      setIsAuthenticated(false);
-      
-      // Se for erro de timeout ou conectividade, não fazer logout automático
+      // Para erros de timeout, não fazer logout automático
       if (error instanceof Error && error.message.includes('Timeout')) {
-        console.log('⏰ Timeout detectado - mantendo sessão');
+        console.log('⏰ Timeout detectado - mantendo sessão parcial');
+        // Definir um usuário mínimo para continuar funcionando
+        setUser({
+          id: userId,
+          name: 'Usuário',
+          email: '',
+          level: 1,
+          xp: 0,
+          xpToNextLevel: 100,
+          currentLevelXP: 0,
+          streak: 0,
+          achievements: [],
+          moods: []
+        });
+        setIsAuthenticated(true);
         return;
       }
       
       // Para outros erros, limpar a sessão
+      setUser(null);
+      setIsAuthenticated(false);
       await supabase.auth.signOut();
     }
   };

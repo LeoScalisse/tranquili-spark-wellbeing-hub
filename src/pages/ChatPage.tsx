@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -74,11 +73,18 @@ const ChatPage = () => {
       // Verifica se a resposta indica erro
       const hasError = response.includes('dificuldades técnicas') || 
                       response.includes('problemas de configuração') ||
-                      response.includes('sessão expirou');
+                      response.includes('sessão expirou') ||
+                      response.includes('problemas de conectividade');
       
       if (hasError) {
         setIsConnected(false);
-        setLastError('Problemas na API');
+        if (response.includes('sessão expirou')) {
+          setLastError('Sessão expirada');
+        } else if (response.includes('conectividade')) {
+          setLastError('Problemas de rede');
+        } else {
+          setLastError('Problemas na API');
+        }
       }
       
       return { response, hasError };
@@ -91,6 +97,27 @@ const ChatPage = () => {
         response: 'Oi! Estou com dificuldades técnicas agora, mas logo estarei de volta! Lembre-se: você é mais forte do que imagina. 💪✨',
         hasError: true
       };
+    }
+  };
+
+  const handleRetryConnection = async () => {
+    console.log('🔄 Tentando reconectar...');
+    setLastError('');
+    
+    try {
+      const testResult = await claudeService.testConnection();
+      if (testResult.success) {
+        setIsConnected(true);
+        setLastError('');
+        toast.success('Reconectada com sucesso! 🌸');
+      } else {
+        setIsConnected(false);
+        setLastError('Teste falhou');
+        toast.error('Ainda com problemas de conexão');
+      }
+    } catch (error) {
+      console.error('❌ Erro no retry:', error);
+      toast.error('Erro ao tentar reconectar');
     }
   };
 
@@ -213,7 +240,11 @@ const ChatPage = () => {
           </CardHeader>
           
           <CardContent className="flex-1 flex flex-col p-0">
-            <ChatConnectionStatus isConnected={isConnected} lastError={lastError} />
+            <ChatConnectionStatus 
+              isConnected={isConnected} 
+              lastError={lastError}
+              onRetry={handleRetryConnection}
+            />
             
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {messages.map(message => (
