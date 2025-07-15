@@ -20,8 +20,16 @@ const Index = () => {
         console.log('✅ Usuário autenticado - redirecionando para home');
         navigate('/', { replace: true });
       } else {
-        console.log('❌ Usuário não autenticado - redirecionando para auth');
-        navigate('/auth', { replace: true });
+        // Verificar se o onboarding foi completado
+        const onboardingCompleted = localStorage.getItem('onboarding-completed');
+        
+        if (!onboardingCompleted) {
+          console.log('🎯 Redirecionando para onboarding');
+          navigate('/onboarding', { replace: true });
+        } else {
+          console.log('❌ Usuário não autenticado - redirecionando para auth');
+          navigate('/auth', { replace: true });
+        }
       }
     }, 100);
 
