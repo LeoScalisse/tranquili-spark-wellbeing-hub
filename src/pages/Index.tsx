@@ -2,9 +2,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
+import { useOnboarding } from '@/hooks/useOnboarding';
 
 const Index = () => {
   const { isAuthenticated } = useUser();
+  const { hasCompletedOnboarding } = useOnboarding();
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
@@ -17,8 +19,14 @@ const Index = () => {
       setIsRedirecting(true);
       
       if (isAuthenticated) {
-        console.log('✅ Usuário autenticado - redirecionando para home');
-        navigate('/', { replace: true });
+        console.log('✅ Usuário autenticado');
+        if (hasCompletedOnboarding) {
+          console.log('✅ Onboarding completo - redirecionando para home');
+          navigate('/', { replace: true });
+        } else {
+          console.log('⚠️ Onboarding pendente - redirecionando para onboarding');
+          navigate('/onboarding', { replace: true });
+        }
       } else {
         console.log('❌ Usuário não autenticado - redirecionando para auth');
         navigate('/auth', { replace: true });
@@ -26,7 +34,7 @@ const Index = () => {
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [isAuthenticated, navigate, isRedirecting]);
+  }, [isAuthenticated, hasCompletedOnboarding, navigate, isRedirecting]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

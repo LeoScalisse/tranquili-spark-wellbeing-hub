@@ -17,6 +17,7 @@ import TranquiliSpacePage from "./pages/TranquiliSpacePage";
 import TranquiliGamesPage from "./pages/TranquiliGamesPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
+import OnboardingPage from "./pages/OnboardingPage";
 import GlobalAchievementWrapper from "./components/GlobalAchievementWrapper";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import PWAUpdateNotification from "./components/PWAUpdateNotification";
@@ -41,6 +42,7 @@ const App = () => {
                   <PWAInstallPrompt />
                   <Routes>
                     <Route path="/auth" element={<AuthPage />} />
+                    <Route path="/onboarding" element={<OnboardingPage />} />
                     <Route path="/" element={
                       <ProtectedRoute>
                         <HomePage />

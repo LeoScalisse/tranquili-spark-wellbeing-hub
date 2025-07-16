@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
+import { useOnboarding } from '@/hooks/useOnboarding';
 import { useAudio } from '@/contexts/AudioContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +24,7 @@ const AuthPage = () => {
   });
 
   const { login, register } = useUser();
+  const { hasCompletedOnboarding, checkOnboardingStatus } = useOnboarding();
   const { playClickSound } = useAudio();
   const navigate = useNavigate();
 
@@ -101,8 +103,15 @@ const AuthPage = () => {
       
       if (success) {
         setShowTransition(true);
+        
         setTimeout(() => {
-          navigate('/');
+          // Para novos registros, sempre ir para onboarding
+          // Para logins, o ProtectedRoute cuidará do redirecionamento
+          if (isLogin) {
+            navigate('/');
+          } else {
+            navigate('/onboarding');
+          }
         }, 4000);
       }
     } catch (error) {
