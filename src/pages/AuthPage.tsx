@@ -24,7 +24,7 @@ const AuthPage = () => {
   });
 
   const { login, register } = useUser();
-  const { hasCompletedOnboarding, checkOnboardingStatus } = useOnboarding();
+  const { saveTempOnboardingData } = useOnboarding();
   const { playClickSound } = useAudio();
   const navigate = useNavigate();
 
@@ -104,14 +104,11 @@ const AuthPage = () => {
       if (success) {
         setShowTransition(true);
         
+        // Salvar dados temporários do onboarding se existirem
+        await saveTempOnboardingData();
+        
         setTimeout(() => {
-          // Para novos registros, sempre ir para onboarding
-          // Para logins, o ProtectedRoute cuidará do redirecionamento
-          if (isLogin) {
-            navigate('/');
-          } else {
-            navigate('/onboarding');
-          }
+          navigate('/home', { replace: true });
         }, 4000);
       }
     } catch (error) {

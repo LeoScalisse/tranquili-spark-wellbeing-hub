@@ -3,7 +3,6 @@ import { useUser } from '@/contexts/UserContext';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useOnboarding } from '@/hooks/useOnboarding';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -11,7 +10,6 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated } = useUser();
-  const { hasCompletedOnboarding } = useOnboarding();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [showRetry, setShowRetry] = useState(false);
   const location = useLocation();
@@ -94,18 +92,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
-  }
-
-  // Se o usuário está autenticado mas não completou o onboarding
-  // e não está na página de onboarding, redirecionar
-  if (!hasCompletedOnboarding && location.pathname !== '/onboarding') {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  // Se o usuário já completou o onboarding mas está na página de onboarding
-  // redirecionar para home
-  if (hasCompletedOnboarding && location.pathname === '/onboarding') {
-    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

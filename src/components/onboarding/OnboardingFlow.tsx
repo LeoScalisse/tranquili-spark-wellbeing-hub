@@ -44,19 +44,21 @@ const OnboardingFlow = () => {
     setCurrentStep(6);
   };
 
-  const handleOnboardingComplete = async () => {
-    const success = await saveOnboardingData({
+  const handleOnboardingComplete = () => {
+    // Marcar onboarding como visto
+    localStorage.setItem('onboarding_viewed', 'true');
+    
+    // Salvar dados temporariamente no localStorage
+    localStorage.setItem('temp_onboarding_data', JSON.stringify({
       name: formData.name,
       mental_path: formData.mentalPath,
       personal_why: formData.personalWhy
-    });
+    }));
 
-    if (success) {
-      // Pequeno delay para uma transição mais suave
-      setTimeout(() => {
-        navigate('/', { replace: true });
-      }, 1000);
-    }
+    // Pequeno delay para uma transição mais suave
+    setTimeout(() => {
+      navigate('/auth', { replace: true });
+    }, 1000);
   };
 
   if (isLoading) {
