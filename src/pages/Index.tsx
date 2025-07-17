@@ -2,31 +2,31 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
+import { useOnboarding } from '@/hooks/useOnboarding';
 
 const Index = () => {
   const { isAuthenticated } = useUser();
+  const { hasCompletedOnboarding } = useOnboarding();
   const navigate = useNavigate();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
+    console.log('🏠 Index - Estado de autenticação:', isAuthenticated);
+    
     if (isRedirecting) return;
     
     const timeout = setTimeout(() => {
       setIsRedirecting(true);
       
-      // Verificar se o onboarding já foi visto
-      const onboardingViewed = localStorage.getItem('onboarding_viewed');
-      
-      if (!onboardingViewed) {
-        console.log('🎯 Primeira visita - redirecionando para onboarding');
-        navigate('/onboarding', { replace: true });
-        return;
-      }
-      
-      // Se onboarding já foi visto, seguir fluxo de autenticação
       if (isAuthenticated) {
-        console.log('✅ Usuário autenticado - redirecionando para home');
-        navigate('/home', { replace: true });
+        console.log('✅ Usuário autenticado');
+        if (hasCompletedOnboarding) {
+          console.log('✅ Onboarding completo - redirecionando para home');
+          navigate('/', { replace: true });
+        } else {
+          console.log('⚠️ Onboarding pendente - redirecionando para onboarding');
+          navigate('/onboarding', { replace: true });
+        }
       } else {
         console.log('❌ Usuário não autenticado - redirecionando para auth');
         navigate('/auth', { replace: true });
@@ -34,7 +34,7 @@ const Index = () => {
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [isAuthenticated, navigate, isRedirecting]);
+  }, [isAuthenticated, hasCompletedOnboarding, navigate, isRedirecting]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

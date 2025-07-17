@@ -9,7 +9,6 @@ import { UserProvider } from "./contexts/UserContext";
 import { AudioProvider } from "./contexts/AudioContext";
 import { AchievementAnimationProvider } from "./contexts/AchievementAnimationContext";
 import AuthPage from "./pages/AuthPage";
-import Index from "./pages/Index";
 import HomePage from "./pages/HomePage";
 import ChatPage from "./pages/ChatPage";
 import ReportPage from "./pages/ReportPage";
@@ -44,12 +43,11 @@ const App = () => {
                   <Routes>
                     <Route path="/auth" element={<AuthPage />} />
                     <Route path="/onboarding" element={<OnboardingPage />} />
-                    <Route path="/home" element={
+                    <Route path="/" element={
                       <ProtectedRoute>
                         <HomePage />
                       </ProtectedRoute>
                     } />
-                    <Route path="/" element={<Index />} />
                     <Route path="/chat" element={
                       <ProtectedRoute>
                         <ChatPage />

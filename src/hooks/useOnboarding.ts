@@ -113,32 +113,12 @@ export const useOnboarding = () => {
     }
   };
 
-  const saveTempOnboardingData = async (): Promise<boolean> => {
-    try {
-      const tempData = localStorage.getItem('temp_onboarding_data');
-      if (!tempData) return false;
-
-      const data = JSON.parse(tempData);
-      const success = await saveOnboardingData(data);
-      
-      if (success) {
-        localStorage.removeItem('temp_onboarding_data');
-      }
-      
-      return success;
-    } catch (error) {
-      console.error('Erro ao salvar dados temporários:', error);
-      return false;
-    }
-  };
-
   return {
     onboardingData,
     hasCompletedOnboarding,
     isLoading,
     saveOnboardingData,
     getPersonalWhy,
-    checkOnboardingStatus,
-    saveTempOnboardingData
+    checkOnboardingStatus
   };
 };
