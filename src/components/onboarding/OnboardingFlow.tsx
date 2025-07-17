@@ -26,7 +26,11 @@ const OnboardingFlow = () => {
   };
 
   const handleStep2Next = (name: string) => {
-    setFormData(prev => ({ ...prev, name }));
+    if (!name.trim()) {
+      alert('Por favor, insira seu nome para continuar.');
+      return;
+    }
+    setFormData(prev => ({ ...prev, name: name.trim() }));
     setCurrentStep(3);
   };
 
@@ -36,7 +40,11 @@ const OnboardingFlow = () => {
   };
 
   const handleStep4Next = (personalWhy: string) => {
-    setFormData(prev => ({ ...prev, personalWhy }));
+    if (!personalWhy.trim()) {
+      alert('Por favor, compartilhe seu porquê pessoal para continuar.');
+      return;
+    }
+    setFormData(prev => ({ ...prev, personalWhy: personalWhy.trim() }));
     setCurrentStep(5);
   };
 
@@ -45,6 +53,12 @@ const OnboardingFlow = () => {
   };
 
   const handleOnboardingComplete = async () => {
+    // Validação final dos dados
+    if (!formData.name.trim() || !formData.mentalPath || !formData.personalWhy.trim()) {
+      alert('Alguns dados estão incompletos. Por favor, volte e preencha todas as informações.');
+      return;
+    }
+
     const success = await saveOnboardingData({
       name: formData.name,
       mental_path: formData.mentalPath,

@@ -2,6 +2,7 @@
 import { useUser } from '@/contexts/UserContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAudio } from '@/contexts/AudioContext';
+import { useOnboarding } from '@/hooks/useOnboarding';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,7 @@ const Header = () => {
   const { user, logout } = useUser();
   const { theme, toggleTheme } = useTheme();
   const { playClickSound } = useAudio();
+  const { getUserName } = useOnboarding();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -65,7 +67,7 @@ const Header = () => {
             Tranquili<span className="tranquili-plus">+</span>
           </h1>
           <Badge variant="secondary" className="text-sm">
-            Olá, {user.name}! 👋
+            Olá, {getUserName()}! 👋
           </Badge>
         </div>
         

@@ -8,6 +8,7 @@ import MoodCard from '@/components/MoodCard';
 import DiaryCard from '@/components/DiaryCard';
 import ServicesCarousel from '@/components/ServicesCarousel';
 import QuickActions from '@/components/QuickActions';
+import PersonalizedMicroAction from '@/components/PersonalizedMicroAction';
 import { Star, Calendar, Trophy, Zap, Target } from 'lucide-react';
 
 // Definição das conquistas
@@ -148,6 +149,8 @@ const HomePage = () => {
         
         <QuickActions />
       </div>
+      
+      <PersonalizedMicroAction />
     </div>
   );
 };

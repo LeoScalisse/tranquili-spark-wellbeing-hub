@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BarChart3, Trophy, Gamepad2, MessageCircle } from 'lucide-react';
+import { BarChart3, Trophy, Gamepad2, MessageCircle, Settings } from 'lucide-react';
 import { useAudio } from '@/contexts/AudioContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -39,6 +39,13 @@ const QuickActions = () => {
       icon: <MessageCircle className="h-6 w-6" />,
       route: '/chat',
       color: 'text-green-500'
+    },
+    {
+      title: 'Configurações',
+      description: 'Personalize sua experiência',
+      icon: <Settings className="h-6 w-6" />,
+      route: '/settings',
+      color: 'text-gray-500'
     }
   ];
 
@@ -56,7 +63,7 @@ const QuickActions = () => {
       <div className={`grid gap-4 ${
         isMobile 
           ? 'grid-cols-2' 
-          : 'grid-cols-2 md:grid-cols-4'
+          : 'grid-cols-3 md:grid-cols-5'
       }`}>
         {actions.map((action) => (
           <Card 

@@ -113,12 +113,56 @@ export const useOnboarding = () => {
     }
   };
 
+  const resetOnboarding = async (): Promise<boolean> => {
+    setIsLoading(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('Usuário não autenticado');
+      }
+
+      const { error } = await supabase
+        .from('user_onboarding')
+        .update({ onboarding_completed: false })
+        .eq('user_id', user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      setOnboardingData(null);
+      setHasCompletedOnboarding(false);
+      toast.success('Onboarding resetado! Você pode refazê-lo agora.');
+      
+      return true;
+    } catch (error) {
+      console.error('Erro ao resetar onboarding:', error);
+      toast.error('Erro ao resetar onboarding. Tente novamente.');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getUserName = (): string => {
+    return onboardingData?.name || 'Usuário';
+  };
+
+  const getMentalPath = (): string | null => {
+    return onboardingData?.mental_path || null;
+  };
+
   return {
     onboardingData,
     hasCompletedOnboarding,
     isLoading,
     saveOnboardingData,
     getPersonalWhy,
-    checkOnboardingStatus
+    checkOnboardingStatus,
+    resetOnboarding,
+    getUserName,
+    getMentalPath
   };
 };
