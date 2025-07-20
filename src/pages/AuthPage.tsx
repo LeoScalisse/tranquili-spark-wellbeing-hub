@@ -102,17 +102,15 @@ const AuthPage = () => {
       }
       
       if (success) {
-        setShowTransition(true);
-        
-        setTimeout(() => {
-          // Para novos registros, sempre ir para onboarding
-          // Para logins, o ProtectedRoute cuidará do redirecionamento
-          if (isLogin) {
+        if (isLogin) {
+          setShowTransition(true);
+          setTimeout(() => {
             navigate('/');
-          } else {
-            navigate('/onboarding');
-          }
-        }, 4000);
+          }, 4000);
+        } else {
+          // Para registro, redirecionar para página de verificação de email
+          navigate(`/email-verification?email=${encodeURIComponent(formData.email)}`, { replace: true });
+        }
       }
     } catch (error) {
       toast.error('Ocorreu um erro. Tente novamente.');

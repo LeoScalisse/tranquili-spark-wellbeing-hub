@@ -9,6 +9,7 @@ import { UserProvider } from "./contexts/UserContext";
 import { AudioProvider } from "./contexts/AudioContext";
 import { AchievementAnimationProvider } from "./contexts/AchievementAnimationContext";
 import AuthPage from "./pages/AuthPage";
+import EmailVerificationPage from "./pages/EmailVerificationPage";
 import HomePage from "./pages/HomePage";
 import ChatPage from "./pages/ChatPage";
 import ReportPage from "./pages/ReportPage";
@@ -43,6 +44,7 @@ const App = () => {
                   <PWAInstallPrompt />
                   <Routes>
                     <Route path="/auth" element={<AuthPage />} />
+                    <Route path="/email-verification" element={<EmailVerificationPage />} />
                     <Route path="/onboarding" element={<OnboardingPage />} />
                     <Route path="/" element={
                       <ProtectedRoute>
