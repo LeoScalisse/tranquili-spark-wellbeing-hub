@@ -29,8 +29,8 @@ const App = () => {
   const queryClient = useMemo(() => new QueryClient(), []);
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <ThemeProvider>
+      <ThemeProvider>
+        <TooltipProvider>
           <UserProvider>
             <AudioProvider>
               <AchievementAnimationProvider>
@@ -86,8 +86,8 @@ const App = () => {
               </AchievementAnimationProvider>
             </AudioProvider>
           </UserProvider>
-        </ThemeProvider>
-      </TooltipProvider>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };
