@@ -1,18 +1,16 @@
 
 import { useUser } from '@/contexts/UserContext';
-import { useTheme } from '@/contexts/ThemeContext';
 import { useAudio } from '@/contexts/AudioContext';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Sun, Moon, Sparkles, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { calculateXPRequirement } from '@/utils/xpSystem';
 
 const Header = () => {
   const { user, logout } = useUser();
-  const { theme, toggleTheme } = useTheme();
   const { playClickSound } = useAudio();
   const { getUserName } = useOnboarding();
   const navigate = useNavigate();
@@ -21,37 +19,6 @@ const Header = () => {
     playClickSound();
     logout();
     navigate('/auth');
-  };
-
-  const handleThemeToggle = () => {
-    playClickSound();
-    toggleTheme();
-  };
-
-  const getThemeIcon = () => {
-    switch (theme) {
-      case 'light':
-        return <Sun className="h-4 w-4" />;
-      case 'dark':
-        return <Moon className="h-4 w-4" />;
-      case 'tranquili':
-        return <Sparkles className="h-4 w-4" />;
-      default:
-        return <Sun className="h-4 w-4" />;
-    }
-  };
-
-  const getThemeLabel = () => {
-    switch (theme) {
-      case 'light':
-        return 'Claro';
-      case 'dark':
-        return 'Escuro';
-      case 'tranquili':
-        return 'Tranquili';
-      default:
-        return 'Claro';
-    }
   };
 
   if (!user) return null;
@@ -86,16 +53,6 @@ const Header = () => {
             <p className="font-medium">🔥 {user.streak}</p>
             <p className="text-xs text-muted-foreground">dias seguidos</p>
           </div>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleThemeToggle}
-            className="glassmorphism"
-          >
-            {getThemeIcon()}
-            <span className="ml-2 hidden sm:inline">{getThemeLabel()}</span>
-          </Button>
           
           <Button
             variant="outline"

@@ -1,12 +1,10 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 
-type Theme = 'light' | 'dark' | 'tranquili';
+type Theme = 'tranquili';
 
 interface ThemeContextType {
   theme: Theme;
-  setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
   usedThemes: Theme[];
 }
 
@@ -21,59 +19,27 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>('light');
-  const [usedThemes, setUsedThemes] = useState<Theme[]>(['light']);
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('tranquili-theme') as Theme;
-    const savedUsedThemes = JSON.parse(localStorage.getItem('tranquili-used-themes') || '["light"]');
-    
-    if (savedTheme) {
-      setTheme(savedTheme);
-    }
-    
-    setUsedThemes(savedUsedThemes);
-  }, []);
-
-  const handleSetTheme = (newTheme: Theme) => {
-    setTheme(newTheme);
-    
-    // Adicionar tema à lista de temas usados se não estiver lá
-    setUsedThemes(prev => {
-      if (!prev.includes(newTheme)) {
-        const newUsedThemes = [...prev, newTheme];
-        localStorage.setItem('tranquili-used-themes', JSON.stringify(newUsedThemes));
-        console.log('Novo tema adicionado:', newTheme, 'Total de temas usados:', newUsedThemes.length);
-        return newUsedThemes;
-      }
-      return prev;
-    });
-  };
+  const theme: Theme = 'tranquili';
+  const usedThemes: Theme[] = ['tranquili'];
 
   useEffect(() => {
     const root = window.document.documentElement;
     
-    // Remove all theme classes
+    // Remove all theme classes (cleanup)
     root.classList.remove('theme-light', 'theme-dark', 'theme-tranquili');
     
-    // Add current theme class
-    root.classList.add(`theme-${theme}`);
+    // Add tranquili theme class
+    root.classList.add('theme-tranquili');
     
     // Save to localStorage
     localStorage.setItem('tranquili-theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    const themes: Theme[] = ['light', 'dark', 'tranquili'];
-    const currentIndex = themes.indexOf(theme);
-    const nextIndex = (currentIndex + 1) % themes.length;
-    handleSetTheme(themes[nextIndex]);
-  };
+    localStorage.setItem('tranquili-used-themes', JSON.stringify(usedThemes));
+    
+    console.log('Tema Tranquili+ aplicado com sucesso');
+  }, []);
 
   const value = {
     theme,
-    setTheme: handleSetTheme,
-    toggleTheme,
     usedThemes,
   };
 
