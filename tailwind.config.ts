@@ -2,7 +2,6 @@
 import type { Config } from "tailwindcss";
 
 export default {
-	darkMode: ["class"],
 	content: [
 		"./pages/**/*.{ts,tsx}",
 		"./components/**/*.{ts,tsx}",
@@ -156,8 +155,6 @@ export default {
 				'zoom-in': 'zoom-in 0.3s ease-out'
 			},
 			backgroundImage: {
-				'gradient-light': 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 25%, #a8edea 75%, #fed6e3 100%)',
-				'gradient-dark': 'linear-gradient(135deg, #2c3e50 0%, #4a6741 25%, #6a5acd 75%, #2c3e50 100%)',
 				'gradient-tranquili': 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #89f7fe 75%, #66a6ff 100%)'
 			}
 		}

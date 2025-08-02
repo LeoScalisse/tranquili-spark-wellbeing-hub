@@ -25,8 +25,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const root = window.document.documentElement;
     
-    // Remove all theme classes (cleanup)
-    root.classList.remove('theme-light', 'theme-dark', 'theme-tranquili');
+    // Remove classes desnecessárias e aplica tema tranquili
+    root.classList.remove('dark', 'light');
     
     // Add tranquili theme class
     root.classList.add('theme-tranquili');
