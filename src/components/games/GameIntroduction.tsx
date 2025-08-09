@@ -1,11 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Trophy, Target, Brain, Zap, Clock, Star } from 'lucide-react';
 import { useAudio } from '@/contexts/AudioContext';
 import { useUser } from '@/contexts/UserContext';
-
 interface GameStats {
   currentLevel: string;
   nextLevel: string;
@@ -13,7 +11,6 @@ interface GameStats {
   bestScore: number;
   icon: React.ReactNode;
 }
-
 interface GameIntroductionProps {
   gameId: string;
   title: string;
@@ -29,7 +26,6 @@ interface GameIntroductionProps {
   onPlay: () => void;
   onBack: () => void;
 }
-
 const GameIntroduction: React.FC<GameIntroductionProps> = ({
   gameId,
   title,
@@ -41,28 +37,27 @@ const GameIntroduction: React.FC<GameIntroductionProps> = ({
   onBack
 }) => {
   const [bestScore, setBestScore] = useState(stats.bestScore);
-  const { playGameSound } = useAudio();
-  const { user } = useUser();
-
+  const {
+    playGameSound
+  } = useAudio();
+  const {
+    user
+  } = useUser();
   useEffect(() => {
     const saved = localStorage.getItem(`${gameId}-best`);
     if (saved) {
       setBestScore(parseInt(saved));
     }
   }, [gameId]);
-
   const handlePlay = () => {
     playGameSound('click');
     onPlay();
   };
-
   const handleBack = () => {
     playGameSound('click');
     onBack();
   };
-
-  return (
-    <div className={`min-h-screen ${colorScheme.background} relative overflow-hidden`}>
+  return <div className={`min-h-screen ${colorScheme.background} relative overflow-hidden`}>
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-10 right-10 text-9xl text-white/20">
@@ -76,15 +71,10 @@ const GameIntroduction: React.FC<GameIntroductionProps> = ({
       <div className="relative z-10 p-4 max-w-md mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between pt-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleBack}
-            className="text-white hover:bg-white/20"
-          >
+          <Button variant="ghost" size="icon" onClick={handleBack} className="text-white hover:bg-white/20">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="text-white text-lg font-medium">19:18</div>
+          
         </div>
 
         {/* Game Title */}
@@ -173,11 +163,9 @@ const GameIntroduction: React.FC<GameIntroductionProps> = ({
               <h3 className="text-white font-semibold">Como Jogar</h3>
             </div>
             <div className="space-y-2">
-              {howToPlay.map((instruction, index) => (
-                <p key={index} className="text-white/90 text-sm">
+              {howToPlay.map((instruction, index) => <p key={index} className="text-white/90 text-sm">
                   • {instruction}
-                </p>
-              ))}
+                </p>)}
             </div>
           </CardContent>
         </Card>
@@ -203,15 +191,10 @@ const GameIntroduction: React.FC<GameIntroductionProps> = ({
         </div>
 
         {/* Play Button */}
-        <Button
-          onClick={handlePlay}
-          className="w-full h-14 bg-white text-gray-800 hover:bg-gray-100 rounded-full text-lg font-semibold"
-        >
+        <Button onClick={handlePlay} className="w-full h-14 bg-white text-gray-800 hover:bg-gray-100 rounded-full text-lg font-semibold">
           Jogar
         </Button>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default GameIntroduction;
