@@ -8,6 +8,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { UserProvider } from "./contexts/UserContext";
 import { AudioProvider } from "./contexts/AudioContext";
 import { AchievementAnimationProvider } from "./contexts/AchievementAnimationContext";
+import Index from "./pages/Index";
+import WelcomePage from "./pages/WelcomePage";
 import AuthPage from "./pages/AuthPage";
 import EmailVerificationPage from "./pages/EmailVerificationPage";
 import HomePage from "./pages/HomePage";
@@ -42,10 +44,12 @@ const App = () => {
                   <PWAUpdateNotification />
                   <PWAInstallPrompt />
                   <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/welcome" element={<WelcomePage />} />
                     <Route path="/auth" element={<AuthPage />} />
                     <Route path="/email-verification" element={<EmailVerificationPage />} />
                     <Route path="/onboarding" element={<OnboardingPage />} />
-                    <Route path="/" element={
+                    <Route path="/home" element={
                       <ProtectedRoute>
                         <HomePage />
                       </ProtectedRoute>

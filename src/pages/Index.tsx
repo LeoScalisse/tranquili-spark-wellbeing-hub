@@ -22,14 +22,14 @@ const Index = () => {
         console.log('✅ Usuário autenticado');
         if (hasCompletedOnboarding) {
           console.log('✅ Onboarding completo - redirecionando para home');
-          navigate('/', { replace: true });
+          navigate('/home', { replace: true });
         } else {
           console.log('⚠️ Onboarding pendente - redirecionando para onboarding');
           navigate('/onboarding', { replace: true });
         }
       } else {
-        console.log('❌ Usuário não autenticado - redirecionando para auth');
-        navigate('/auth', { replace: true });
+        console.log('❌ Usuário não autenticado - redirecionando para welcome');
+        navigate('/welcome', { replace: true });
       }
     }, 100);
 

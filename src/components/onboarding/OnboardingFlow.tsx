@@ -68,7 +68,7 @@ const OnboardingFlow = () => {
     if (success) {
       // Pequeno delay para uma transição mais suave
       setTimeout(() => {
-        navigate('/', { replace: true });
+        navigate('/auth', { replace: true });
       }, 1000);
     }
   };
