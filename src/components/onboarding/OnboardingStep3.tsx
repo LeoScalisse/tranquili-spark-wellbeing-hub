@@ -66,7 +66,7 @@ const OnboardingStep3 = ({ onNext, userName }: OnboardingStep3Props) => {
                 p-6 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg 
                 glassmorphism touch-target
                 ${selectedPath === path.id 
-                  ? 'ring-2 ring-accent bg-accent/10 animate-pulse-glow' 
+                  ? 'ring-2 ring-accent bg-accent/10' 
                   : 'hover:bg-white/5'
                 }
               `}
