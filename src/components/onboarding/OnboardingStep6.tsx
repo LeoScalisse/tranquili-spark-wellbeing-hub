@@ -44,8 +44,12 @@ const OnboardingStep6 = ({ onComplete, userName, mentalPath }: OnboardingStep6Pr
 
       {/* Mascote Leo */}
       <div className="mb-8 animate-fade-in">
-        <div className="text-8xl mb-4 animate-bounce-soft">
-          🧘‍♂️
+        <div className="mb-4 animate-bounce-soft">
+          <img 
+            src="/src/assets/leo-character.png" 
+            alt="Leo - seu guia da mente" 
+            className="w-32 h-32 mx-auto object-contain"
+          />
         </div>
         <div className="text-xs text-blue-600 font-medium">Leo</div>
       </div>

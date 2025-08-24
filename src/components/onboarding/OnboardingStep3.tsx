@@ -35,8 +35,12 @@ const OnboardingStep3 = ({ onNext, userName }: OnboardingStep3Props) => {
 
       {/* Mascote Leo */}
       <div className="mb-8 animate-fade-in">
-        <div className="text-6xl mb-4 animate-bounce-soft">
-          🧭
+        <div className="mb-4 animate-bounce-soft">
+          <img 
+            src="/src/assets/leo-character.png" 
+            alt="Leo - seu guia da mente" 
+            className="w-24 h-24 mx-auto object-contain"
+          />
         </div>
         <div className="text-xs text-foreground/60 font-medium">Leo</div>
       </div>
