@@ -1,25 +1,36 @@
 import { Button } from '@/components/ui/button';
 import { useAudio } from '@/contexts/AudioContext';
-
 interface OnboardingStep1Props {
   onNext: () => void;
 }
-
-const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
-  const { playClickSound } = useAudio();
-
+const OnboardingStep1 = ({
+  onNext
+}: OnboardingStep1Props) => {
+  const {
+    playClickSound
+  } = useAudio();
   const handleNext = () => {
     playClickSound();
     onNext();
   };
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+  return <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
       {/* Partículas flutuantes */}
-      <div className="floating-particles" style={{ top: '10%', left: '20%' }}></div>
-      <div className="floating-particles" style={{ top: '20%', right: '30%' }}></div>
-      <div className="floating-particles" style={{ bottom: '30%', left: '10%' }}></div>
-      <div className="floating-particles" style={{ bottom: '20%', right: '20%' }}></div>
+      <div className="floating-particles" style={{
+      top: '10%',
+      left: '20%'
+    }}></div>
+      <div className="floating-particles" style={{
+      top: '20%',
+      right: '30%'
+    }}></div>
+      <div className="floating-particles" style={{
+      bottom: '30%',
+      left: '10%'
+    }}></div>
+      <div className="floating-particles" style={{
+      bottom: '20%',
+      right: '20%'
+    }}></div>
 
       {/* Mascote Leo */}
       <div className="mb-8 animate-fade-in">
@@ -42,7 +53,7 @@ const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
             Você não está sozinho se sente que sua mente te sabota às vezes.
           </p>
           <p>
-            Aqui, na <span className="font-bold text-primary">Tranquili<span className="tranquili-plus">+</span></span>, 
+            Aqui, na <span className="font-bold text-slate-50">Tranquili<span className="tranquili-plus">+</span></span>, 
             acreditamos que cuidar da mente é o primeiro passo pra transformar tudo ao nosso redor.
           </p>
           <p>
@@ -50,16 +61,10 @@ const OnboardingStep1 = ({ onNext }: OnboardingStep1Props) => {
           </p>
         </div>
 
-        <Button 
-          onClick={handleNext}
-          size="lg"
-          className="mt-8 px-8 py-4 text-lg font-semibold rounded-full animate-pulse-glow touch-target"
-        >
+        <Button onClick={handleNext} size="lg" className="mt-8 px-8 py-4 text-lg font-semibold rounded-full animate-pulse-glow touch-target">
           Começar
         </Button>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default OnboardingStep1;
